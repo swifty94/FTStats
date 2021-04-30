@@ -1,0 +1,23 @@
+{
+    "AcsPorts": ["8080","8181", "8443"],
+
+    "DbType":"mysql",
+
+    "DbPorts": ["3306","8123"],        
+
+    "AcsStatsUrl": "http://demodm.friendly-tech.com:8181/acsstats",
+
+    "DbConnectionString": "127.0.0.1",
+
+    "QoeDbConnectionString": "clickhouse://demo.friendly-tech.com",
+    
+    "IpAddr": "0.0.0.0",
+    
+    "TcpPort": "5555",
+    
+    "DbUpdateIntervalSec": "120",  
+    
+    "AppName": "FTStats",
+    
+    "Version": 2.0
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/main.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='js/DataTables/datatables.css') }}">
+</head>
+<body onload="headerInfo()">
+<img id='site-logo' src="{{ url_for('static', filename='logo.svg') }}" >
+<br>
+<h2 id='app-name'></h2>
+<div id='node-info'>
+  <table id="header-info">
+    <tr>
+      <th>OS type</th>
+      <th>Node name</th> 
+      <th>CPU arch</th>    
+      <th>CPU cores</th>
+      <th>Total RAM (GB)</th>
+      <th>Total disk (GB)</th>      
+    </tr>
+    <tr>
+      <td id="os"></td>
+      <td id="nodename"></td>
+      <td id="cpuarch"></td>    
+      <td id="cores"></td>
+      <td id="ram"></td>
+      <td id="d_total"></td>      
+    </tr>
+  </table>
+  <br>
+</div>
+<button id='table-view' class="tablink" onclick="openPage('v-table', this)"> Table view</button>
+<button class="tablink" onclick="openPage('v-graph', this)"> Build graph</button>
+<button class="tablink" onclick="openPage('v-csv', this)"> CSV report</button>
+<div id="v-table" class="tabcontent">
+  <h4>Concurent sessions (ACS/DB)</h2>
+    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
+      <thead class="thead-dark">
+        <tr id='concurent-thead'>          
+      </tr>
+      </thead>
+      <tbody id="concurent-table-content">
+      </tbody>
+    </table>
+  <h4>QoE statistics</h2>
+      <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">QoE sessions per min</th>
+            <th scope="col">Serials in cpe_data</th>
+            <th scope="col">Serials in kpi_data</th>
+            <th scope="col">Size of ftacs_qoe_ui_data</th>
+            <th scope="col">Size of system</th>
+            <th scope="col">Updated</th>
+        </tr>
+        </thead>
+        <tbody id="qoe-table-content">
+        </tbody>
+      </table>
+  <h4>CPU</h4>    
+    <table id='cpu-table-view-tbl' class="display compact"  style="width: 100%">
+      <thead class="thead-dark">
+        <tr> 
+          <th scope="col">Jboss CPU</th>
+          <th scope="col">CPU %</th>          
+          <th scope="col">Load avg</th>
+          <th scope="col">Updated</th>
+        </tr>
+      </thead>
+      <tbody id="cpu-table-content">
+      </tbody>
+    </table>
+  <br>
+  <h4>RAM</h2>
+    <table id='ram-table-view-tbl' class="display compact" style="width: 100%">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Free RAM (GB)</th>
+          <th scope="col">Used RAM (GB)</th>
+          <th scope="col">Jboss RAM (GB)</th>
+          <th scope="col">Updated</th>
+      </tr>
+      </thead>
+      <tbody id="ram-table-content">
+      </tbody>
+    </table>
+    <br>
+  <h4>Disk</h2>
+    <table id='disk-table-view-tbl' class="display compact" style="width: 100%">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Disk used (GB)</th>
+          <th scope="col">Disk free (GB)</th>
+          <th scope="col">Total number of reads I/O</th>
+          <th scope="col">Total number of writes I/O</th>
+          <th scope="col">Updated</th>
+      </tr>
+      </thead>
+      <tbody id="disk-table-content">
+      </tbody>
+    </table>
+    <br>
+  <h4>Network</h2>
+    <table id='net-table-view-tbl' class='display compact' style="width: 100%">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Sent (GB)</th>
+          <th scope="col">Received (GB)</th>          
+          <th scope="col">Updated</th>
+      </tr>
+      </thead>
+      <tbody id="net-table-content">
+      </tbody>
+    </table>
+    <br>  
+</div>
+<br>
+<div id="v-graph" class="tabcontent">
+  <p>Select KPI to view the graph</p>
+  <form action="/api/v1/graphData">
+    <label for="kpi">Choose a KPI</label>
+    <select id="kpi" name="kpi">      
+      <option value="cpu_percent">CPU %</option>
+      <option value="loadavg">Load average</option>
+      <option value="javacpu">Java CPU usage</option>
+      <option value="javamem">Java memory</option>
+      <option value="freeram">Free RAM</option>
+      <option value="usedram">Used RAM</option>
+      <option value="u_disk">Used disk</option>
+      <option value="f_disk">Free disk</option>
+      <option value="read_io">Total number of reads I/O</option>
+      <option value="write_io">Total number of writes I/O</option>
+      <option value="sent_b">Sent GB</option>
+      <option value="recv_b">Received GB</option>
+      <option value="qoe_sessions_min">QoE session per min</option>
+      <option value="cpe_data_serial">Serials in cpe_data</option>
+      <option value="kpi_data_serial">Serials in kpi_data</option>
+      <option value="qoedb_size">QoE DB size</option>
+      <option value="sysdb_size">System DB size</option>      
+    </select>    
+    <button type="button" onclick="graphView()">Submit</button>
+  </form>
+  <br>
+  <div id='graph-div' style='width: 100%'></div>
+</div>
+<br>
+<div id="v-csv" class="tabcontent">  
+  <br>
+  <button id="reportSelector" type="button" onclick="createServerReport()">Create server stats report</button>
+  <br>
+  <br>
+  <button id="reportSelector" type="button" onclick="createSessionsReport()">Create sessions (ACS/DB) report</button>
+  <br>
+  <a id='download-server' href='' style="display: none;"></a>
+  <a id='download-sessions' href='' style="display: none;"></a>
+  <br>  
+</div>
+<br>
+<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
+<script>
+$('#table-view').click()   
+concurentSessionsTable()  
+createTable('cpu-table-view-tbl', 'cpu')
+createTable('ram-table-view-tbl', 'ram')
+createTable('disk-table-view-tbl', 'disk')
+createTable('net-table-view-tbl', 'net')
+createTable('qoe-table-view-tbl', 'qoe')
+</script>
+</body>
+</html>

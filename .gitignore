@@ -1,0 +1,5 @@
+TODO
+log/app.log*
+reports/*.csv
+venv/
+__pycache__
