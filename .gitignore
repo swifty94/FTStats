@@ -3,3 +3,4 @@ log/app.log*
 reports/*.csv
 venv/
 __pycache__
+db/*.db
