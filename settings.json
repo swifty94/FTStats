@@ -1,13 +1,9 @@
 {
-    "AcsPorts": ["8080","8181", "8443"],
-
-    "DbType":"mysql",
+    "AcsPorts": ["8080","8181", "8443"],    
 
     "DbPorts": ["3306","8123"],        
 
-    "AcsStatsUrl": "http://demodm.friendly-tech.com:8181/acsstats",
-
-    "DbConnectionString": "127.0.0.1",
+    "AcsStatsUrl": "http://demodm.friendly-tech.com:8181/acsstats",    
 
     "QoeDbConnectionString": "clickhouse://demo.friendly-tech.com",
     
