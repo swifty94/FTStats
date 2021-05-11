@@ -461,7 +461,7 @@ class DbWorker(object):
             values = acsvalues + dbvalues            
             acs_ports = JsonSettings.parseJson('settings.json','AcsPorts')
             db_ports = JsonSettings.parseJson('settings.json','DbPorts')
-            acs_port_names = JsonSettings.getKeys('acs_port_', acs_ports)                
+            acs_port_names = JsonSettings.getKeys('acs_port_', acs_ports)              
             db_port_names = JsonSettings.getKeys('db_port_', db_ports)            
             bindings = '('
             for char in range(len(values)):

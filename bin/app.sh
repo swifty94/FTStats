@@ -33,6 +33,7 @@ f_start(){
         echo "APP_PID=$PID"
         echo ""
     else
+        mkdir log && mkdir reports
         echo ""
         echo "Venv not found. Creating..."
         echo ""
