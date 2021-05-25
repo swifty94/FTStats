@@ -128,8 +128,8 @@ class DataCollector(object):
                 cpu = 0
                 return cpu
             else:
-                process = psutil.Process(pid)            
-                cpu = float(process.cpu_times()[0])                
+                process = psutil.Process(pid)
+                cpu = float(process.cpu_percent(interval=1))
                 return cpu
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
@@ -193,7 +193,7 @@ class DataCollector(object):
     def getCpu(self):
         try:            
             cpu_percent = psutil.cpu_percent(interval=None)            
-            loadavg = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()][0]        
+            loadavg = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()][0]
             javacpu = self._getJbossCpu()            
             keys = ['javacpu','cpu_percent', 'loadavg']
             values = [javacpu, cpu_percent, loadavg]
