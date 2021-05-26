@@ -23,7 +23,8 @@ async function headerInfo(){
             version = data.version
             _setVal("os",os)
             _setVal("nodename",nodename)
-            _setVal("app-name", app_name+' server v.'+version)            
+            _setVal("app-name", app_name+' server v.'+version)
+            _setVal("app-title", app_name)           
             _setVal("cpuarch",cpuarch)
             _setVal("cores",cores)
             _setVal("ram",ram)
