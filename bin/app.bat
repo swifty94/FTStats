@@ -11,5 +11,7 @@ ELSE echo "Venv not found. Creating..."
     py -m venv venv &&
     echo "Install dependencies" &&
     .\venv\Scripts\activate &&
-    .\venv\Scripts\pip3.9.exe install -r dependencies.txt &&
+    cd dependencies &&
+    .\venv\Scripts\pip3.9.exe install * -f ./ --no-index &&
+    cd %APP_HOME%
     pythonw app.py 

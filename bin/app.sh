@@ -42,8 +42,12 @@ f_start(){
         echo "Installing dependencies"
         echo ""
         source venv/bin/activate && sleep 1
-        pip3 install -r $APP_HOME/dependencies.txt && sleep 1
+        cd dep/
+        pip3 install * -f ./ --no-index && sleep 1
         echo ""
+        echo "Done"
+        echo ""
+        cd ..                
         echo "Activated venv"
         echo ""
         python3 app.py &
