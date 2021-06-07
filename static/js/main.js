@@ -2,7 +2,7 @@ const IPADDR = '127.0.0.1'
 const API = 'http://'+IPADDR+':8083/api/v1/'
 
 async function getInstances(){
-    var netreq, netres;
+    let netreq, netres;
     netreq = await fetch(API+'sys');
     netres = await netreq.json();        
     if (netres){        
@@ -37,19 +37,19 @@ async function headerInfo(){
     // get data from back-end            
     try {        
         getInstances()        
-        response = await fetch(API+'sys'); 
-        data = await response.json();
+        let response = await fetch(API+'sys'); 
+        let data = await response.json();
         if (data){                        
             // unpack values
-            os = data.os
-            nodename = data.nodename
-            cpuarch = data.cpuarch    
-            cores = data.cores
-            ram = data.ram
-            d_total = data.d_total
-            app_name = data.app_name
-            version = data.version
-            iscluster = data.isCluster          
+            let os = data.os
+            let nodename = data.nodename
+            let cpuarch = data.cpuarch    
+            let cores = data.cores
+            let ram = data.ram
+            let d_total = data.d_total
+            let app_name = data.app_name
+            let version = data.version
+            let iscluster = data.isCluster          
             _setVal("os",os)
             _setVal("nodename",nodename)
             _setVal("app-name", app_name+' server v.'+version)
@@ -60,7 +60,6 @@ async function headerInfo(){
             _setVal("d_total",d_total)           
             _setVal("isCluster",isCluster)
             // log for debug
-            console.log('Page header created')
         }
     } catch (error) {
         console.log('Error fetching data from back-end: '+error)
@@ -68,10 +67,10 @@ async function headerInfo(){
 }
 
 async function generateTableHead() {        
-    var columnsRes = await fetch(API+'sessionsMeta'); 
-    var data = await columnsRes.json();    
-    var dataObj = Object.values(data)
-    var tr = document.getElementById('concurent-thead')
+    let columnsRes = await fetch(API+'sessionsMeta'); 
+    let data = await columnsRes.json();    
+    let dataObj = Object.values(data)
+    let tr = document.getElementById('concurent-thead')
     for (let key of dataObj) {
       let th = document.createElement("th");
       th.setAttribute("id", key);
@@ -82,10 +81,10 @@ async function generateTableHead() {
   }
 
 async function assignOptions() {    
-    var columnsRes = await fetch(API+'sessionsMeta'); 
-    var data = await columnsRes.json();    
-    var dataObj = Object.values(data)
-    var selector = document.getElementById('kpi')
+    let columnsRes = await fetch(API+'sessionsMeta'); 
+    let data = await columnsRes.json();    
+    let dataObj = Object.values(data)
+    let selector = document.getElementById('kpi')
     for (let key of dataObj) {
       if (key != 'Updated'){
         let option = document.createElement("option");
@@ -98,8 +97,8 @@ async function assignOptions() {
   }
 
 async function concurentSessionsTable(){    
-    var indexLastColumn = $("#concurent-table-view-tbl").find('tr')[0].cells.length-1;
-    var url = API+'tableView?kpi=sessions'
+    let indexLastColumn = $("#concurent-table-view-tbl").find('tr')[0].cells.length-1;
+    let url = API+'tableView?kpi=sessions'
     $(document).ready(function() {
         $.ajax({
             url: url,
@@ -115,11 +114,9 @@ async function concurentSessionsTable(){
     })
 }
 
-function createTable(table_id, kpi_id, arg=NaN){    
-    var url, indexLastColumn, table;
+function createTable(table_id, kpi_id){        
     indexLastColumn = $("#"+table_id).find('tr')[0].cells.length-1;
-    url = API+"tableView?kpi="+kpi_id
-    console.log('Processing data for table: '+table_id+'\nUrl: '+url)
+    url = API+"tableView?kpi="+kpi_id    
     $(document).ready(function() {
         $.ajax({
             url: url,
@@ -135,18 +132,17 @@ function createTable(table_id, kpi_id, arg=NaN){
     })
 }
 
-async function graphView(){    
-    var kpi, response, data, node, value, text;    
-    kpi_id = document.getElementById("kpi").value
-    node = document.getElementById("kpi");
-    value = node.options[node.selectedIndex].value;
-    text = node.options[node.selectedIndex].text;            
-    response = await fetch(API+'graphData?kpi='+kpi_id);
-    data = await response.json();     
-    var layout = {
+async function graphView(){        
+    let kpi_id = document.getElementById("kpi").value
+    let node = document.getElementById("kpi");
+    let value = node.options[node.selectedIndex].value;
+    let text = node.options[node.selectedIndex].text;            
+    let response = await fetch(API+'graphData?kpi='+kpi_id);
+    let data = await response.json();     
+    let layout = {
         title: text
     }
-    var graph = {
+    let graph = {
         x: data['updated'],
         y: data[kpi_id],
         type: 'lines+markers',            
@@ -161,23 +157,24 @@ async function graphView(){
 
 
 function switchHost(){
-    let ipaddr = document.getElementById("hostSelector").value;
+    let ipaddr = document.getElementById("hostSelector").value;    
     location.href = "http://"+ipaddr+":8083/stats";
+    console.log("Redirecting to: "+ipaddr);
 
 }
 
 async function createServerReport(){
-    var response, data, download_link;
+    let response, data, download_link;
     response = await fetch(API+'createServerReport');
     data = await response.json();
-    console.log('File created: '+data.filename)
+    console.log('File created: '+data.filename);
     document.getElementById('download-server').href = API+"downloadCsv?file="+data.filename 
     document.getElementById('download-server').innerHTML = "Download "+data.filename    
     document.getElementById('download-server').style.display = 'block'
 }
 
 async function createSessionsReport(){
-    var response, data, download_link;
+    let response, data, download_link;
     response = await fetch(API+'createSessionsReport');
     data = await response.json();
     console.log('File created: '+data.filename)
@@ -187,7 +184,7 @@ async function createSessionsReport(){
 }
 
 function openPage(pageName,elmnt) {
-    var i, tabcontent, tablinks;
+    let i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
       tabcontent[i].style.display = "none";
@@ -199,3 +196,6 @@ function openPage(pageName,elmnt) {
     document.getElementById(pageName).style.display = "block";    
     elmnt.style.backgroundColor = 'green';
   }
+
+assignOptions()
+generateTableHead()

@@ -170,9 +170,7 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
 <script>
-  $('#table-view').click()
-  assignOptions()
-  generateTableHead() 
+  $('#table-view').click()  
   concurentSessionsTable()  
   createTable('cpu-table-view-tbl', 'cpu')
   createTable('ram-table-view-tbl', 'ram')
