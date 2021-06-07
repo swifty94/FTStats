@@ -12,7 +12,7 @@
 <br>
 <h2 id='app-name'></h2>
 <form action="hostSelector()">
-  <label id='host-pool' for="hostSelector">Cluster IPs</label>
+  <label id='host-pool' for="hostSelector">Cluster addresses</label>
   <select id="hostSelector" name="hostSelector">
   </select>    
   <button type="button" onclick="switchHost()">Ok</button>
@@ -170,13 +170,15 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
 <script>
-$('#table-view').click()   
-concurentSessionsTable()  
-createTable('cpu-table-view-tbl', 'cpu')
-createTable('ram-table-view-tbl', 'ram')
-createTable('disk-table-view-tbl', 'disk')
-createTable('net-table-view-tbl', 'net')
-createTable('qoe-table-view-tbl', 'qoe')
+  $('#table-view').click()
+  assignOptions()
+  generateTableHead() 
+  concurentSessionsTable()  
+  createTable('cpu-table-view-tbl', 'cpu')
+  createTable('ram-table-view-tbl', 'ram')
+  createTable('disk-table-view-tbl', 'disk')
+  createTable('net-table-view-tbl', 'net')
+  createTable('qoe-table-view-tbl', 'qoe')
 </script>
 </body>
 </html>

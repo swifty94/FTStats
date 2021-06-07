@@ -160,7 +160,7 @@ async function graphView(){
 }
 
 
-async function switchHost(){
+function switchHost(){
     let ipaddr = document.getElementById("hostSelector").value;
     location.href = "http://"+ipaddr+":8083/stats";
 
@@ -199,6 +199,3 @@ function openPage(pageName,elmnt) {
     document.getElementById(pageName).style.display = "block";    
     elmnt.style.backgroundColor = 'green';
   }
-
-assignOptions()
-generateTableHead()
