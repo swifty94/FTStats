@@ -1,3 +1,29 @@
+const IPADDR = '127.0.0.1'
+const API = 'http://'+IPADDR+':8083/api/v1/'
+
+async function getInstances(){
+    var netreq, netres;
+    netreq = await fetch(API+'sys');
+    netres = await netreq.json();        
+    if (netres){        
+        instancesArray = netres.instancesArray        
+        for (const ip in instancesArray) {
+            const element = instancesArray[ip];
+            if (element == '127.0.0.1'){
+                console.log('ThisNode:'+element)
+            }else{
+                console.log('RemoteHost:'+element)
+            }                
+            let hostSelector = document.getElementById("hostSelector")                
+            let opt = document.createElement("option");
+            opt.setAttribute("value", element);
+            let text = document.createTextNode(element);
+            opt.appendChild(text);
+            hostSelector.appendChild(opt);            
+        }
+        }        
+}
+
 function _setVal(tagName, value){
     if(tagName && value){        
         document.getElementById(tagName).innerHTML = value        
@@ -5,11 +31,13 @@ function _setVal(tagName, value){
         return false
 }}
      
+
+
 async function headerInfo(){
-    // get data from back-end
-    var response, data, os, nodename, cpuarch, cores, ram, d_total, app_name, version;
-    try {
-        response = await fetch('/api/v1/sys'); 
+    // get data from back-end            
+    try {        
+        getInstances()        
+        response = await fetch(API+'sys'); 
         data = await response.json();
         if (data){                        
             // unpack values
@@ -21,6 +49,7 @@ async function headerInfo(){
             d_total = data.d_total
             app_name = data.app_name
             version = data.version
+            iscluster = data.isCluster          
             _setVal("os",os)
             _setVal("nodename",nodename)
             _setVal("app-name", app_name+' server v.'+version)
@@ -28,7 +57,8 @@ async function headerInfo(){
             _setVal("cpuarch",cpuarch)
             _setVal("cores",cores)
             _setVal("ram",ram)
-            _setVal("d_total",d_total)            
+            _setVal("d_total",d_total)           
+            _setVal("isCluster",isCluster)
             // log for debug
             console.log('Page header created')
         }
@@ -37,8 +67,8 @@ async function headerInfo(){
     }    
 }
 
-async function generateTableHead() {
-    var columnsRes = await fetch('/api/v1/sessionsMeta'); 
+async function generateTableHead() {        
+    var columnsRes = await fetch(API+'sessionsMeta'); 
     var data = await columnsRes.json();    
     var dataObj = Object.values(data)
     var tr = document.getElementById('concurent-thead')
@@ -51,8 +81,8 @@ async function generateTableHead() {
     } 
   }
 
-async function assignOptions() {
-    var columnsRes = await fetch('/api/v1/sessionsMeta'); 
+async function assignOptions() {    
+    var columnsRes = await fetch(API+'sessionsMeta'); 
     var data = await columnsRes.json();    
     var dataObj = Object.values(data)
     var selector = document.getElementById('kpi')
@@ -67,9 +97,9 @@ async function assignOptions() {
     } 
   }
 
-async function concurentSessionsTable(){     
+async function concurentSessionsTable(){    
     var indexLastColumn = $("#concurent-table-view-tbl").find('tr')[0].cells.length-1;
-    var url = '/api/v1/tableView?kpi=sessions'    
+    var url = API+'tableView?kpi=sessions'
     $(document).ready(function() {
         $.ajax({
             url: url,
@@ -85,10 +115,10 @@ async function concurentSessionsTable(){
     })
 }
 
-function createTable(table_id, kpi_id){
+function createTable(table_id, kpi_id, arg=NaN){    
     var url, indexLastColumn, table;
     indexLastColumn = $("#"+table_id).find('tr')[0].cells.length-1;
-    url = '/api/v1/tableView?kpi='+kpi_id
+    url = API+"tableView?kpi="+kpi_id
     console.log('Processing data for table: '+table_id+'\nUrl: '+url)
     $(document).ready(function() {
         $.ajax({
@@ -105,32 +135,13 @@ function createTable(table_id, kpi_id){
     })
 }
 
-async function drawGraph(apiUrl, xTime, yValue, htmlTag, graphName){
-    var response = await fetch(apiUrl); 
-    var data = await response.json();
-    var isData = Object.values(data).length    
-    var layout = {
-        title: graphName
-    }
-    if (!isData){
-        console.log('No data to display')
-        document.getElementById(htmlTag).innerHTML = 'No data to display'
-    }else{        
-        var graph = {
-            x: data[xTime],
-            y: data[yValue],
-            type: 'lines+markers',            
-        };
-        Plotly.newPlot(htmlTag, [graph], layout)
-    }}
-
-async function graphView(){
+async function graphView(){    
     var kpi, response, data, node, value, text;    
-    kpi_id = document.getElementById("kpi").value    
+    kpi_id = document.getElementById("kpi").value
     node = document.getElementById("kpi");
     value = node.options[node.selectedIndex].value;
     text = node.options[node.selectedIndex].text;            
-    response = await fetch('/api/v1/graphData?kpi='+kpi_id);
+    response = await fetch(API+'graphData?kpi='+kpi_id);
     data = await response.json();     
     var layout = {
         title: text
@@ -148,22 +159,29 @@ async function graphView(){
     }    
 }
 
+
+async function switchHost(){
+    let ipaddr = document.getElementById("hostSelector").value;
+    location.href = "http://"+ipaddr+":8083/stats";
+
+}
+
 async function createServerReport(){
     var response, data, download_link;
-    response = await fetch('/api/v1/createServerReport');
+    response = await fetch(API+'createServerReport');
     data = await response.json();
     console.log('File created: '+data.filename)
-    document.getElementById('download-server').href = "/api/v1/downloadCsv?file="+data.filename 
+    document.getElementById('download-server').href = API+"downloadCsv?file="+data.filename 
     document.getElementById('download-server').innerHTML = "Download "+data.filename    
     document.getElementById('download-server').style.display = 'block'
 }
 
 async function createSessionsReport(){
     var response, data, download_link;
-    response = await fetch('/api/v1/createSessionsReport');
+    response = await fetch(API+'createSessionsReport');
     data = await response.json();
     console.log('File created: '+data.filename)
-    document.getElementById('download-sessions').href = "/api/v1/downloadCsv?file="+data.filename 
+    document.getElementById('download-sessions').href = API+"downloadCsv?file="+data.filename 
     document.getElementById('download-sessions').innerHTML = "Download "+data.filename    
     document.getElementById('download-sessions').style.display = 'block'
 }
@@ -183,4 +201,4 @@ function openPage(pageName,elmnt) {
   }
 
 assignOptions()
-generateTableHead() 
+generateTableHead()

@@ -23,6 +23,20 @@ table, th, td , h3{
   margin-left: 10px;
 }
 
+#host-pool {
+  color: #090909;
+  text-align: left;
+  margin-top: 80px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  font-size: 25px;
+}
+
+#hostSelector {
+  margin-bottom: 10px;
+  margin-left: 10px;
+}
+
 /* Set height of body and the document to 100% */
 body, html {
   height: 100%;

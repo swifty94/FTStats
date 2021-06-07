@@ -11,23 +11,30 @@
 <img id='site-logo' src="{{ url_for('static', filename='logo.svg') }}" >
 <br>
 <h2 id='app-name'></h2>
+<form action="hostSelector()">
+  <label id='host-pool' for="hostSelector">Cluster IPs</label>
+  <select id="hostSelector" name="hostSelector">
+  </select>    
+  <button type="button" onclick="switchHost()">Ok</button>
+</form>
 <div id='node-info'>
   <table id="header-info">
     <tr>
       <th>OS type</th>
-      <th>Node name</th> 
       <th>CPU arch</th>    
       <th>CPU cores</th>
       <th>Total RAM (GB)</th>
-      <th>Total disk (GB)</th>      
+      <th>Total disk (GB)</th>
+      <th>isCluster</th> 
     </tr>
     <tr>
       <td id="os"></td>
-      <td id="nodename"></td>
+      <td id="nodename"></td>      
       <td id="cpuarch"></td>    
       <td id="cores"></td>
       <td id="ram"></td>
-      <td id="d_total"></td>      
+      <td id="d_total"></td>
+      <td id="isCluster"></td>  
     </tr>
   </table>
   <br>

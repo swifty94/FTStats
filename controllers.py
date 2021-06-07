@@ -34,13 +34,12 @@ class JsonSettings(object):
         cn = __class__.__name__
         try:
             with open(json_file) as f:
-                data = json.load(f)
-            
+                data = json.load(f)            
             json_value = data[json_key]        
             return json_value
         except Exception as e:
-            logging.error(f'{cn} Exception: {e}', exc_info=1)
-    
+            logging.error(f'{cn} Exception: {e}', exc_info=1)        
+
     @staticmethod
     def getKeys(key_macro: str, value_list: List) -> List:
         """
@@ -84,7 +83,7 @@ class DataCollector(object):
     def __init__(self):
         self.cn = __class__.__name__ 
         self.acsUrl = JsonSettings.parseJson('settings.json','AcsStatsUrl')
-        self.qoeDbStr = JsonSettings.parseJson('settings.json','QoeDbConnectionString')
+        self.qoeDbStr = JsonSettings.parseJson('settings.json','QoeDbConnectionString')        
     
     def _getJbossPid(self) -> int:
         try:
@@ -158,6 +157,10 @@ class DataCollector(object):
         try:
             app_name = db_ports = JsonSettings.parseJson('settings.json','AppName')
             version = JsonSettings.parseJson('settings.json','Version')
+            instancesArray = None
+            isCluster = bool(JsonSettings.parseJson('settings.json','isCluster'))                
+            if isCluster:
+                instancesArray = JsonSettings.parseJson('settings.json','instancesArray')                
             uname = platform.uname()
             osname = uname.system
             nodename = uname.node                
@@ -167,8 +170,8 @@ class DataCollector(object):
             ram = round((svmem.total/1024/1024/1024),2)
             d = psutil.disk_usage('/')
             d_total = round((d.total/1024/1024/1024),2)
-            values = [osname,nodename,cpuarch,cores,ram,d_total,app_name,version]
-            keys = ['os','nodename','cpuarch','cores','ram','d_total','app_name','version']
+            values = [osname,nodename,cpuarch,cores,ram,d_total,app_name,version, isCluster, instancesArray]
+            keys = ['os','nodename','cpuarch','cores','ram','d_total','app_name','version','isCluster', 'instancesArray']
             data = JsonSettings.fillDict(keys,values)                     
             return data
         except Exception as e:
@@ -516,3 +519,7 @@ class ReportMetaData(object):
             return user_keys
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
+
+
+d = DataCollector()
+d.getSys()

@@ -9,11 +9,15 @@
     
     "IpAddr": "0.0.0.0",
     
-    "TcpPort": "5555",
+    "TcpPort": "8083",
     
     "DbUpdateIntervalSec": "120",  
     
     "AppName": "FTStats",
     
-    "Version": 2.0    
+    "Version": 2.0,
+
+    "isCluster": true,
+
+    "instancesArray": ["127.0.0.1", "138.201.226.204", "demo.friendly-tech.com"]
 }
