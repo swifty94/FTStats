@@ -107,7 +107,7 @@ def sessionsMeta():
     res = t._getMeta()
     return jsonify(res)
   except Exception as e:
-    logging.error(f'Request -> /api/v1/tableView -> {e}', exc_info=1)
+    logging.error(f'Request -> /api/v1/sessionsMeta -> {e}', exc_info=1)
 
 @app.route('/api/v1/tableView', methods=['GET'])
 @cross_origin()

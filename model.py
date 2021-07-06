@@ -79,7 +79,7 @@ class TableStats(object):
             elif kpi == 'disk':
                 data = self._set("u_disk,f_disk,read_io,write_io,updated")
             elif kpi == 'net':
-                data = self._set("sent_b,recv_b,updated")
+                data = self._set("sent_b, recv_b, errin, errout, dropin, dropout, updated")
             elif kpi == 'qoe':
                 data = self._set("qoe_sessions_min,cpe_data_serial,kpi_data_serial,qoedb_size,sysdb_size,updated")
             elif kpi == 'sessions':
@@ -112,7 +112,7 @@ class CsvStats(object):
             report_name = f'reports/FTStats_server_report_{date}.csv'                         
             connection = self.db.connect()
             cursor  = connection.cursor()
-            cursor.execute("select javacpu,cpu_percent,loadavg,javamem,freeram,usedram,u_disk,f_disk,read_io,write_io,sent_b,recv_b,qoe_sessions_min,cpe_data_serial,kpi_data_serial,qoedb_size,sysdb_size, strftime('%Y_%d_%m_%H_%M_%S', updated) as timestamp from stats")
+            cursor.execute("select javacpu,cpu_percent,loadavg,javamem,freeram,usedram,u_disk,f_disk,read_io,write_io, sent_b, recv_b, errin, errout, dropin, dropout,qoe_sessions_min,cpe_data_serial,kpi_data_serial,qoedb_size,sysdb_size, strftime('%Y_%d_%m_%H_%M_%S', updated) as timestamp from stats")
             with open(report_name, "w", newline='') as csv_file:
                 csv_writer = csv.writer(csv_file, delimiter=',', lineterminator='\n')
                 csv_writer.writerow([i[0] for i in cursor.description])
