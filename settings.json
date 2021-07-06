@@ -19,5 +19,8 @@
 
     "isCluster": true,
 
-    "instancesArray": ["127.0.0.1", "138.201.226.204", "demo.friendly-tech.com"]
+    "instancesArray": ["127.0.0.1", "138.201.226.204", "demo.friendly-tech.com"],
+
+    "isHazelcast": true
+
 }
