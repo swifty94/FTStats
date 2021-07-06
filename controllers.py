@@ -1,7 +1,6 @@
 import re
 import sys
 import json
-import time
 import psutil
 import socket
 import os.path
@@ -9,9 +8,7 @@ import sqlite3
 import platform
 import requests
 from os import path
-from numbers import Number
 from bs4 import BeautifulSoup
-from datetime import datetime
 from clickhouse_driver import connect
 from clickhouse_driver.errors import NetworkError
 from typing import Dict, List, AnyStr, Union
@@ -45,10 +42,10 @@ class JsonSettings(object):
         """
         :Accept key pattern and lits of associated values to return list of corresponding keys \n
         :Example:\n
-        >>> acs_ports = Settings.parseJson('AcsPorts')
+        >>> acs_ports = JsonSettings.parseJson('AcsPorts')
         >>> print(acs_ports)
         >>> ['8080','8181']
-        >>> keys = Settings.getKeys('acs_port_', acs_ports)
+        >>> keys = JsonSettings.getKeys('acs_port_', acs_ports)
         >>> print(keys)
         >>> acs_port_8080, acs_port_8181
         """
@@ -76,14 +73,15 @@ class JsonSettings(object):
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
 
+
 class DataCollector(object):
     """
-    Class that has varios methods for getting system related information e.g., RAM, CPU, etc.
+    Class that has various methods for getting system related information e.g., RAM, CPU, etc.
     """
     def __init__(self):
         self.cn = __class__.__name__ 
-        self.acsUrl = JsonSettings.parseJson('settings.json','AcsStatsUrl')
-        self.qoeDbStr = JsonSettings.parseJson('settings.json','QoeDbConnectionString')        
+        self.acsUrl = JsonSettings.parseJson('settings.json', 'AcsStatsUrl')
+        self.qoeDbStr = JsonSettings.parseJson('settings.json', 'QoeDbConnectionString')
     
     def _getJbossPid(self) -> int:
         try:
@@ -160,7 +158,7 @@ class DataCollector(object):
             instancesArray = None
             isCluster = bool(JsonSettings.parseJson('settings.json','isCluster'))                
             if isCluster:
-                instancesArray = JsonSettings.parseJson('settings.json','instancesArray')                
+                instancesArray = JsonSettings.parseJson('settings.json','instancesArray')
             uname = platform.uname()
             osname = uname.system
             nodename = uname.node                
@@ -211,9 +209,13 @@ class DataCollector(object):
             net_io = psutil.net_io_counters()
             sent_b = round((net_io.bytes_sent/1024/1024/1024),2)
             recv_b = round((net_io.bytes_recv/1024/1024/1024),2)
-            values = [sent_b, recv_b]
-            keys = ['sent_b','recv_b']
-            data = JsonSettings.fillDict(keys,values)                       
+            errin = net_io.errin
+            errout = net_io.errout
+            dropin = net_io.dropin
+            dropout = net_io.dropout
+            values = [sent_b, recv_b, errin, errout, dropin, dropout]
+            keys = ['sent_b', 'recv_b', 'errin', 'errout', 'dropin', 'dropout']
+            data = JsonSettings.fillDict(keys, values)
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting Network Data {e}', exc_info=1)
@@ -421,7 +423,9 @@ class DbWorker(object):
     
     def insertSys(self):
         try:
-            system = self.data.getSys()        
+            system = self.data.getSys()
+            system.pop('isCluster')
+            system.pop('instancesArray')
             sql = """
             INSERT or IGNORE INTO sysinfo ('os','nodename','cpuarch','cores','ram','d_total','app_name','version')
             VALUES (?,?,?,?,?,?,?,?)
@@ -446,7 +450,11 @@ class DbWorker(object):
                 bindings += '?,'
             bindings += ')'
             sql = f"""
-            INSERT INTO stats ('javacpu','cpu_percent', 'loadavg','javamem', 'freeram', 'usedram','u_disk','f_disk','read_io','write_io','sent_b','recv_b','qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size')
+            INSERT INTO stats ('javacpu','cpu_percent', 'loadavg',
+            'javamem', 'freeram', 'usedram',
+            'u_disk','f_disk','read_io','write_io',
+            'sent_b','recv_b', 'errin', 'errout', 'dropin', 'dropout', 
+            'qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size')
             VALUES {bindings.replace('?,)','?)')}
             """            
             self.db.insertData(sql, values)            
@@ -519,7 +527,3 @@ class ReportMetaData(object):
             return user_keys
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
-
-
-d = DataCollector()
-d.getSys()
