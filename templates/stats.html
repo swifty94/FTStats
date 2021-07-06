@@ -21,6 +21,7 @@
   <table id="header-info">
     <tr>
       <th>OS type</th>
+      <th>Server name</th>
       <th>CPU arch</th>    
       <th>CPU cores</th>
       <th>Total RAM (GB)</th>
@@ -43,7 +44,7 @@
 <button class="tablink" onclick="openPage('v-graph', this)"> Build graph</button>
 <button class="tablink" onclick="openPage('v-csv', this)"> CSV report</button>
 <div id="v-table" class="tabcontent">
-  <h4>Concurent sessions (ACS/DB)</h2>
+  <h4>Concurent sessions (ACS/DB)</h4>
     <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
       <thead class="thead-dark">
         <tr id='concurent-thead'>          
@@ -52,7 +53,7 @@
       <tbody id="concurent-table-content">
       </tbody>
     </table>
-  <h4>QoE statistics</h2>
+  <h4>QoE statistics</h4>
       <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
         <thead class="thead-dark">
           <tr>
@@ -81,7 +82,7 @@
       </tbody>
     </table>
   <br>
-  <h4>RAM</h2>
+  <h4>RAM</h4>
     <table id='ram-table-view-tbl' class="display compact" style="width: 100%">
       <thead class="thead-dark">
         <tr>
@@ -95,7 +96,7 @@
       </tbody>
     </table>
     <br>
-  <h4>Disk</h2>
+  <h4>Disk</h4>
     <table id='disk-table-view-tbl' class="display compact" style="width: 100%">
       <thead class="thead-dark">
         <tr>
@@ -110,14 +111,18 @@
       </tbody>
     </table>
     <br>
-  <h4>Network</h2>
+  <h4>Network</h4>
     <table id='net-table-view-tbl' class='display compact' style="width: 100%">
       <thead class="thead-dark">
         <tr>
           <th scope="col">Sent (GB)</th>
-          <th scope="col">Received (GB)</th>          
+          <th scope="col">Received (GB)</th>
+          <th scope="col">Errors receiving</th>
+          <th scope="col">Errors sending</th>
+          <th scope="col">Dropped incoming</th>
+          <th scope="col">Dropped outgoing</th>
           <th scope="col">Updated</th>
-      </tr>
+        </tr>
       </thead>
       <tbody id="net-table-content">
       </tbody>
@@ -146,7 +151,11 @@
       <option value="cpe_data_serial">Serials in cpe_data</option>
       <option value="kpi_data_serial">Serials in kpi_data</option>
       <option value="qoedb_size">QoE DB size</option>
-      <option value="sysdb_size">System DB size</option>      
+      <option value="sysdb_size">System DB size</option>
+      <option value="errin">Errors receiving</option>
+      <option value="errout">Errors sending</option>
+      <option value="dropin">Dropped incoming</option>
+      <option value="dropout">Dropped outgoing</option>
     </select>    
     <button type="button" onclick="graphView()">Submit</button>
   </form>
@@ -156,10 +165,10 @@
 <br>
 <div id="v-csv" class="tabcontent">  
   <br>
-  <button id="reportSelector" type="button" onclick="createServerReport()">Create server stats report</button>
+  <button id="btnServerReport" type="button" onclick="createServerReport()">Create server stats report</button>
   <br>
   <br>
-  <button id="reportSelector" type="button" onclick="createSessionsReport()">Create sessions (ACS/DB) report</button>
+  <button id="btnSessionReport" type="button" onclick="createSessionsReport()">Create sessions (ACS/DB) report</button>
   <br>
   <a id='download-server' href='' style="display: none;"></a>
   <a id='download-sessions' href='' style="display: none;"></a>
@@ -171,11 +180,11 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
 <script>
   $('#table-view').click()  
-  concurentSessionsTable()  
+  concurentSessionsTable()
+  createTable('net-table-view-tbl', 'net')
   createTable('cpu-table-view-tbl', 'cpu')
   createTable('ram-table-view-tbl', 'ram')
   createTable('disk-table-view-tbl', 'disk')
-  createTable('net-table-view-tbl', 'net')
   createTable('qoe-table-view-tbl', 'qoe')
 </script>
 </body>

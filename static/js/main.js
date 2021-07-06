@@ -116,7 +116,8 @@ async function concurentSessionsTable(){
 
 function createTable(table_id, kpi_id){        
     indexLastColumn = $("#"+table_id).find('tr')[0].cells.length-1;
-    url = API+"tableView?kpi="+kpi_id    
+    url = API+"tableView?kpi="+kpi_id
+    console.log(url)
     $(document).ready(function() {
         $.ajax({
             url: url,
