@@ -1,202 +1,296 @@
-const IPADDR = '127.0.0.1'
-const API = 'http://'+IPADDR+':8083/api/v1/'
+class AppView {
+    constructor(host, port) {
+      this.host = host;
+      this.port = port;
+      this.url = "http://"+this.host+":"+this.port+"/api/v1/"
+    }
 
-async function getInstances(){
-    let netreq, netres;
-    netreq = await fetch(API+'sys');
-    netres = await netreq.json();        
-    if (netres){        
-        instancesArray = netres.instancesArray        
-        for (const ip in instancesArray) {
-            const element = instancesArray[ip];
-            if (element == '127.0.0.1'){
-                console.log('ThisNode:'+element)
-            }else{
-                console.log('RemoteHost:'+element)
-            }                
-            let hostSelector = document.getElementById("hostSelector")                
-            let opt = document.createElement("option");
-            opt.setAttribute("value", element);
-            let text = document.createTextNode(element);
-            opt.appendChild(text);
-            hostSelector.appendChild(opt);            
+    __reinit__(){
+        try {
+            let ipaddr = document.getElementById("hostSelector").value;
+            let param = 'ip='+ipaddr
+            window.location.search += param;
+        } catch (error) {
+            console.log('ReinitiationError: '+error)
+            let result = {
+                "__reinit__": false
+            }
+            console.log(result);
+            return result;
         }
+    }
+
+    __setVal(tagName, value){
+        if(tagName && value){        
+            document.getElementById(tagName).innerHTML = value
+            let result = {
+                "_setVal -> ${value}": true
+            }
+            console.log(result);
+            return result;   
+        } else {
+            let result = {
+                "_setVal -> ${value}": false
+            }
+            console.log(result);
+            return result;
+        }
+    }
+
+    async appHeader(){     
+        try {   
+            let response = await fetch(this.url+'sys'); 
+            let data = await response.json();
+            if (data){                
+                let os = data.os
+                let nodename = data.nodename
+                let cpuarch = data.cpuarch    
+                let cores = data.cores
+                let ram = data.ram
+                let d_total = data.d_total
+                let app_name = data.app_name
+                let version = data.version
+                let instancesArray = data.instancesArray        
+                for (const ip in instancesArray) {
+                    const element = instancesArray[ip];                                   
+                    let hostSelector = document.getElementById("hostSelector")                
+                    let opt = document.createElement("option");
+                    opt.setAttribute("value", element);
+                    let text = document.createTextNode(element);
+                    opt.appendChild(text);
+                    hostSelector.appendChild(opt);            
+                }
+                this.__setVal("os",os)
+                this.__setVal("nodename",nodename)
+                this.__setVal("app-name", app_name+' server v.'+version)
+                this.__setVal("app-title", app_name)           
+                this.__setVal("cpuarch",cpuarch)
+                this.__setVal("cores",cores)
+                this.__setVal("ram",ram)
+                this.__setVal("d_total",d_total)
+                let result = {
+                    "appHeaderCreated":true
+                }
+                console.log(result);
+                return result;
+            }
+        } catch (error) {
+            console.log('Error fetching data from back-end: '+error)
+            let result = {
+                "appHeaderCreated":true
+            }
+            console.log(result);
+            return result;
+        }
+    }
+
+    async concurentSessionsTable(){
+        try {
+            let indexLastColumn = $("#concurent-table-view-tbl").find('tr')[0].cells.length-1;
+            let apiUrl = this.url+'tableView?kpi=sessions';
+            $(document).ready(function() {
+                $.ajax({
+                    url: apiUrl,
+                    method: 'get',
+                    dataType: 'json',
+                    success: function( data ){
+                        $('#concurent-table-view-tbl').DataTable( {
+                            "ajax" : {"url": apiUrl, "dataSrc":"data"},
+                            "data": data,                          
+                            "order":[[indexLastColumn,'desc']]
+                    } );
+                }});
+            });
+            let result = {
+                "concurentSessionsTableContent": true
+            }
+            console.log(result);
+            return result
+        } catch (error) {
+            let result = {
+                "concurentSessionsTableContent": false
+            }
+            console.log(result);
+            return result;
+        }
+    }
+    
+    __createTable(table_id, kpi_id){       
+        try {
+            let indexLastColumn = $("#"+table_id).find('tr')[0].cells.length-1;
+            let apiUrl = this.url+"tableView?kpi="+kpi_id;
+            $(document).ready(function() {
+                $.ajax({
+                    url: apiUrl,
+                    method: 'get',
+                    dataType: 'json',
+                    success: function( data ){
+                        $('#'+table_id).DataTable( {
+                            "ajax" : {"url": apiUrl, "dataSrc":"data"},
+                            "data": data,      
+                            "order":[[indexLastColumn,'desc']]
+                    } );
+                }});
+            });
+            let result = {
+                "__createTable": true,
+                "table_id": table_id,
+                "kpi_id": kpi_id
+            }
+            console.log(result);
+            return result
+        } catch (error) {
+            let result = {
+                "__createTable": false,
+                "table_id": table_id,
+                "kpi_id": kpi_id
+            }
+            console.log(result);
+            return result;
         }        
-}
+    }
 
-function _setVal(tagName, value){
-    if(tagName && value){        
-        document.getElementById(tagName).innerHTML = value        
-    } else {        
-        return false
-}}
-     
-
-
-async function headerInfo(){
-    // get data from back-end            
-    try {        
-        getInstances()        
-        let response = await fetch(API+'sys'); 
-        let data = await response.json();
-        if (data){                        
-            // unpack values
-            let os = data.os
-            let nodename = data.nodename
-            let cpuarch = data.cpuarch    
-            let cores = data.cores
-            let ram = data.ram
-            let d_total = data.d_total
-            let app_name = data.app_name
-            let version = data.version
-            let iscluster = data.isCluster          
-            _setVal("os",os)
-            _setVal("nodename",nodename)
-            _setVal("app-name", app_name+' server v.'+version)
-            _setVal("app-title", app_name)           
-            _setVal("cpuarch",cpuarch)
-            _setVal("cores",cores)
-            _setVal("ram",ram)
-            _setVal("d_total",d_total)           
-            _setVal("isCluster",isCluster)
-            // log for debug
+    async getAllTables(){
+        try {
+            this.__createTable('cpu-table-view-tbl', 'cpu');
+            this.__createTable('ram-table-view-tbl', 'ram');
+            this.__createTable('disk-table-view-tbl', 'disk');
+            this.__createTable('net-table-view-tbl', 'net');
+            this.__createTable('qoe-table-view-tbl', 'qoe');
+            let result = {
+                "getAllTables": true             
+            }
+            console.log(result);
+            return result
+        } catch (error) {
+            let result = {
+                "getAllTables": false
+            }
+            console.log(result);
+            return result;
         }
-    } catch (error) {
-        console.log('Error fetching data from back-end: '+error)
-    }    
-}
-
-async function generateTableHead() {        
-    let columnsRes = await fetch(API+'sessionsMeta'); 
-    let data = await columnsRes.json();    
-    let dataObj = Object.values(data)
-    let tr = document.getElementById('concurent-thead')
-    for (let key of dataObj) {
-      let th = document.createElement("th");
-      th.setAttribute("id", key);
-      let text = document.createTextNode(key);
-      th.appendChild(text);
-      tr.appendChild(th);
-    } 
-  }
-
-async function assignOptions() {    
-    let columnsRes = await fetch(API+'sessionsMeta'); 
-    let data = await columnsRes.json();    
-    let dataObj = Object.values(data)
-    let selector = document.getElementById('kpi')
-    for (let key of dataObj) {
-      if (key != 'Updated'){
-        let option = document.createElement("option");
-        option.setAttribute("value", key);
-        let text = document.createTextNode(key);
-        option.appendChild(text);
-        selector.appendChild(option);
-      }      
-    } 
-  }
-
-async function concurentSessionsTable(){    
-    let indexLastColumn = $("#concurent-table-view-tbl").find('tr')[0].cells.length-1;
-    let url = API+'tableView?kpi=sessions'
-    $(document).ready(function() {
-        $.ajax({
-            url: url,
-            method: 'get',
-            dataType: 'json',
-            success: function( data ){
-                $('#concurent-table-view-tbl').DataTable( {
-                    "ajax" : {"url": url, "dataSrc":"data"},
-                    "data": data,                          
-                    "order":[[indexLastColumn,'desc']]
-            } );
-        }});
-    })
-}
-
-function createTable(table_id, kpi_id){        
-    indexLastColumn = $("#"+table_id).find('tr')[0].cells.length-1;
-    url = API+"tableView?kpi="+kpi_id
-    console.log(url)
-    $(document).ready(function() {
-        $.ajax({
-            url: url,
-            method: 'get',
-            dataType: 'json',
-            success: function( data ){
-                $('#'+table_id).DataTable( {
-                    "ajax" : {"url": url, "dataSrc":"data"},
-                    "data": data,      
-                    "order":[[indexLastColumn,'desc']]
-            } );
-        }});
-    })
-}
-
-async function graphView(){        
-    let kpi_id = document.getElementById("kpi").value
-    let node = document.getElementById("kpi");
-    let value = node.options[node.selectedIndex].value;
-    let text = node.options[node.selectedIndex].text;            
-    let response = await fetch(API+'graphData?kpi='+kpi_id);
-    let data = await response.json();     
-    let layout = {
-        title: text
     }
-    let graph = {
-        x: data['updated'],
-        y: data[kpi_id],
-        type: 'lines+markers',            
-    };
-    if (document.getElementById('plot-container plotly')){
-        Plotly.purge('graph-div');    
-        Plotly.newPlot('graph-div', [graph], layout)
-    } else {
-        Plotly.newPlot('graph-div', [graph], layout)    
-    }    
-}
 
-
-function switchHost(){
-    let ipaddr = document.getElementById("hostSelector").value;    
-    location.href = "http://"+ipaddr+":8083/stats";
-    console.log("Redirecting to: "+ipaddr);
-
-}
-
-async function createServerReport(){
-    let response, data, download_link;
-    response = await fetch(API+'createServerReport');
-    data = await response.json();
-    console.log('File created: '+data.filename);
-    document.getElementById('download-server').href = API+"downloadCsv?file="+data.filename 
-    document.getElementById('download-server').innerHTML = "Download "+data.filename    
-    document.getElementById('download-server').style.display = 'block'
-}
-
-async function createSessionsReport(){
-    let response, data, download_link;
-    response = await fetch(API+'createSessionsReport');
-    data = await response.json();
-    console.log('File created: '+data.filename)
-    document.getElementById('download-sessions').href = API+"downloadCsv?file="+data.filename 
-    document.getElementById('download-sessions').innerHTML = "Download "+data.filename    
-    document.getElementById('download-sessions').style.display = 'block'
-}
-
-function openPage(pageName,elmnt) {
-    let i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-      tabcontent[i].style.display = "none";
+    async graphView(){
+        try {
+            let kpi_id = document.getElementById("kpi").value
+            let node = document.getElementById("kpi");
+            let text = node.options[node.selectedIndex].text;            
+            let response = await fetch(this.url+'graphData?kpi='+kpi_id);
+            let data = await response.json();     
+            let layout = {
+                title: text
+            }
+            let graph = {
+                x: data['updated'],
+                y: data[kpi_id],
+                type: 'lines+markers',            
+            };
+            if (document.getElementById('plot-container plotly')){
+                Plotly.purge('graph-div');    
+                Plotly.newPlot('graph-div', [graph], layout)
+            } else {
+                Plotly.newPlot('graph-div', [graph], layout)    
+            }
+            let result = {
+                "GraphCreated": text,
+                "Status": true
+            }
+            console.log(result)
+            return result;
+        } catch (error) {
+            console.log('Error fetching data from back-end: '+error)
+            let result = {
+                "GraphCreated": text,
+                "Status": false
+            }
+            console.log(result)
+            return result;
+        }
     }
-    tablinks = document.getElementsByClassName("tablink");
-    for (i = 0; i < tablinks.length; i++) {
-      tablinks[i].style.backgroundColor = "";
-    }    
-    document.getElementById(pageName).style.display = "block";    
-    elmnt.style.backgroundColor = 'green';
-  }
 
-assignOptions()
-generateTableHead()
+    async createServerReport(){
+        try {
+            let response, data;
+            response = await fetch(this.url+'createServerReport');
+            data = await response.json();
+            document.getElementById('download-server').href = API+"downloadCsv?file="+data.filename 
+            document.getElementById('download-server').innerHTML = "Download "+data.filename    
+            document.getElementById('download-server').style.display = 'block'
+            let result = {
+                "ReportName":data.filename,
+                "Status": true
+            }
+            console.log(result)
+            return result
+        } catch (error) {
+            console.log('Error fetching data from back-end: '+error)
+            let result = {
+                "ReportName":data.filename,
+                "Status": false
+            }
+            console.log(result)
+            return result
+        }  
+    }
+    
+    async createSessionsReport(){
+        try {
+            let response, data;
+            response = await fetch(this.url+'createSessionsReport');
+            data = await response.json();            
+            document.getElementById('download-sessions').href = API+"downloadCsv?file="+data.filename 
+            document.getElementById('download-sessions').innerHTML = "Download "+data.filename    
+            document.getElementById('download-sessions').style.display = 'block'
+            let result = {
+                "ReportName":data.filename,
+                "Status": true
+            }
+            console.log(result)
+            return result
+        } catch (error) {
+            console.log('Error fetching data from back-end: '+error)
+            let result = {
+                "ReportName":data.filename,
+                "Status": false
+            }
+            console.log(result)
+            return result
+        }
+    }
+    
+    open(pageName,elmnt) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablink");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].style.backgroundColor = "";
+        }    
+        document.getElementById(pageName).style.display = "block";    
+        elmnt.style.backgroundColor = 'green';
+    }
+
+    async createMainView(){
+        try {
+            document.getElementById("table-view").click();
+            this.appHeader();            
+            this.concurentSessionsTable();
+            this.getAllTables()
+            let result = {                
+                "createMainView": true
+            }
+            console.log(result)
+            return result
+        } catch (error) {
+            console.log('Error fetching data from back-end: '+error)
+            let result = {                
+                "createMainView": false
+            }
+            console.log(result)
+            return result          
+        }
+    }
+}

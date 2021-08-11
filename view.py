@@ -4,7 +4,7 @@ import requests
 import logging
 import logging.config
 from os import path
-from controllers import DataCollector
+from controllers import DataCollector, JsonSettings
 from model import GraphStats, TableStats, CsvStats
 
 log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
@@ -118,7 +118,7 @@ def tableView():
       kpi = str(request.args['kpi'])
       t = TableStats()
       outcome = t.createView(kpi)
-      logging.info(f'Request -> /api/v1/tableView')
+      logging.info(f'Request -> /api/v1/tableView?kpi={kpi}')
     return jsonify(outcome)  
   except Exception as e:
     logging.error(f'Request -> /api/v1/tableView -> {e}', exc_info=1)
@@ -154,7 +154,17 @@ def download_file():
     
 @app.route('/stats', methods=['POST', 'GET'])
 def stats():
-  try:    
-    return render_template('stats.html')
+  try:
+    args = request.args
+    if 'ip' in args:
+      ip = str(request.args['ip'])
+    else:
+      ip = "127.0.0.1"
+      
+    hostData = {
+      "ip": ip,
+      "port": int(JsonSettings.parseJson("settings.json", 'TcpPort'))
+      }
+    return render_template('stats.html', hostData=hostData)
   except Exception as e:
     logging.error(f'Request -> /stats -> {e}', exc_info=1)    

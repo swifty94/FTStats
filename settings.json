@@ -1,26 +1,34 @@
 {
-    "AcsPorts": ["8080","8181", "8443"],    
+    "AcsPorts": ["8080"],    
 
-    "DbPorts": ["3306","8123"],        
+    "DbPorts": ["3306","8123"],
+
+    "mountpoint": "/",
+    
+    "collectQoe": false,
 
     "AcsStatsUrl": "http://demodm.friendly-tech.com:8181/acsstats",    
-
-    "QoeDbConnectionString": "clickhouse://demo.friendly-tech.com",
-    
-    "IpAddr": "0.0.0.0",
-    
-    "TcpPort": "8083",
-    
-    "DbUpdateIntervalSec": "120",  
-    
-    "AppName": "FTStats",
-    
-    "Version": 2.0,
+        
+    "QoeDbConnectionString": "clickhouse://demo.friendly-tech.com",        
 
     "isCluster": true,
 
     "instancesArray": ["127.0.0.1", "138.201.226.204", "demo.friendly-tech.com"],
 
-    "isHazelcast": true
+    "isHazelcast": true,
+
+    "HazelcastUrl": "http://127.0.0.1:5701/hazelcast/health",
+
+    "IpAddr": "0.0.0.0",
+    
+    "TcpPort": "8080",
+    
+    "DbUpdateIntervalSec": "120",
+
+    "DbTruncateIntervalSec": "2592000",
+    
+    "AppName": "FTStats",
+    
+    "Version": 3.0
 
 }

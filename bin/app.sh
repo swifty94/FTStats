@@ -142,7 +142,7 @@ case "$1" in
 		f_rebuild
 		;;
 	*)
-		echo "Usage: app { start | stop | restart | status | rebuild}"
+		echo "Usage: app { start | stop | restart | status | rebuild }"
 		exit 1
 esac
 

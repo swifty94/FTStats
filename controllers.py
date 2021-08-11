@@ -3,11 +3,11 @@ import sys
 import json
 import psutil
 import socket
-import os.path
+import os
+from os import path
 import sqlite3
 import platform
 import requests
-from os import path
 from bs4 import BeautifulSoup
 from clickhouse_driver import connect
 from clickhouse_driver.errors import NetworkError
@@ -82,6 +82,7 @@ class DataCollector(object):
         self.cn = __class__.__name__ 
         self.acsUrl = JsonSettings.parseJson('settings.json', 'AcsStatsUrl')
         self.qoeDbStr = JsonSettings.parseJson('settings.json', 'QoeDbConnectionString')
+        self.mountpoint = JsonSettings.parseJson('settings.json', 'mountpoint')
     
     def _getJbossPid(self) -> int:
         try:
@@ -206,15 +207,13 @@ class DataCollector(object):
     
     def getNetwork(self) -> Dict:
         try:
-            net_io = psutil.net_io_counters()
-            sent_b = round((net_io.bytes_sent/1024/1024/1024),2)
-            recv_b = round((net_io.bytes_recv/1024/1024/1024),2)
+            net_io = psutil.net_io_counters()            
             errin = net_io.errin
             errout = net_io.errout
             dropin = net_io.dropin
             dropout = net_io.dropout
-            values = [sent_b, recv_b, errin, errout, dropin, dropout]
-            keys = ['sent_b', 'recv_b', 'errin', 'errout', 'dropin', 'dropout']
+            values = [errin, errout, dropin, dropout]
+            keys = ['errin', 'errout', 'dropin', 'dropout']
             data = JsonSettings.fillDict(keys, values)
             return data
         except Exception as e:
@@ -223,14 +222,11 @@ class DataCollector(object):
     
     def getDisk(self) -> Dict:
         try:
-            d = psutil.disk_usage('/')
+            d = psutil.disk_usage(self.mountpoint)
             u_disk = round((d.used/1024/1024/1024),2)
-            f_disk = round((d.free/1024/1024/1024),2)
-            disk_io = psutil.disk_io_counters()
-            read_io = disk_io.read_bytes
-            write_io = disk_io.write_bytes
-            values = [u_disk,f_disk,read_io,write_io]
-            keys = ['u_disk','f_disk','read_io','write_io']
+            f_disk = round((d.free/1024/1024/1024),2)                    
+            values = [u_disk,f_disk]
+            keys = ['u_disk','f_disk']
             data = JsonSettings.fillDict(keys,values)                    
             return data
         except Exception as e:
@@ -287,12 +283,10 @@ class DataCollector(object):
             response = requests.get(self.acsUrl)
             page = BeautifulSoup(response.text, 'html.parser')            
             qoe_sessions_min = page.find("td", text="QoESession per min (cur hour):").find_next_sibling("td").text            
-            cpe_data_serial = self.clickhouseSelect("select count(*) from ftacs_qoe_ui_data.cpe_data")
-            kpi_data_serial = self.clickhouseSelect("select count(*) from ftacs_qoe_ui_data.kpi_data")
-            qoedb_size = self.clickhouseSelect("SELECT round((sum(x)/1024/1024/1024),2) FROM (SELECT sum(bytes) as x FROM system.parts WHERE active AND database = 'ftacs_qoe_ui_data' GROUP BY bytes ORDER BY bytes DESC) y")
-            sysdb_size = self.clickhouseSelect("SELECT round((sum(x)/1024/1024/1024),2) FROM (SELECT sum(bytes) as x FROM system.parts WHERE active AND database = 'system' GROUP BY bytes ORDER BY bytes DESC) y")            
-            keys = ['qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size']
-            values = [qoe_sessions_min,cpe_data_serial,kpi_data_serial,qoedb_size,sysdb_size]
+            cpe_data_serial = self.clickhouseSelect("select count(*) from ftacs_qoe_ui_data.cpe_data")            
+            qoedb_size = self.clickhouseSelect("SELECT round((sum(x)/1024/1024/1024),2) FROM (SELECT sum(bytes) as x FROM system.parts WHERE active AND database = 'ftacs_qoe_ui_data' GROUP BY bytes ORDER BY bytes DESC) y")            
+            keys = ['qoe_sessions_min','cpe_data_serial','qoedb_size',]
+            values = [qoe_sessions_min,cpe_data_serial,qoedb_size]
             qoe_data = JsonSettings.fillDict(keys,values)            
             return qoe_data            
         except Exception as e:
@@ -338,7 +332,7 @@ class SqlProcessor(object):
         
     def initDb(self) -> None:
         """
-        :Initiating database if not exist \n
+        Initiating database if not exist \n
         :Accept - None\n
         :Return - None
         """
@@ -365,7 +359,20 @@ class SqlProcessor(object):
             logging.info(f'{self.cn} Database created with tables:\n{tables.fetchall()}')
             if connection:
                 connection.close()
-    
+
+    def delDb(self) -> bool:
+        """
+        Void method to remove DB if needed\n
+        :Accept - None\n
+        :Return - True if succeded
+        """
+        try:
+            os.remove(self.dbname)
+            if not os.path.isfile(self.dbname):
+                return True            
+        except Exception as e:
+            logging.error(f'{self.cn} Error \n{e}', exc_info=1)
+
     def selectData(self, sql: str) -> List:
         """
         Select data from DB\n
@@ -412,7 +419,14 @@ class DbWorker(object):
     def __init__(self):
         self.cn = __class__.__name__
         self.data = DataCollector()
-        self.db = SqlProcessor()        
+        self.db = SqlProcessor()   
+
+    def _get_bindings(self, sql_values):
+        bindings = '('
+        for char in range(len(sql_values)):
+            bindings += '?,'
+        bindings += ')'
+        return bindings
 
     def getJsonValues(self, json: Dict) -> tuple:
         values = []
@@ -443,21 +457,22 @@ class DbWorker(object):
             ram = self.getJsonValues(self.data.getRam())
             disk = self.getJsonValues(self.data.getDisk())
             network = self.getJsonValues(self.data.getNetwork())
-            qoe = self.getJsonValues(self.data.getQoeData())
-            values = cpu + ram + disk + network + qoe
-            bindings = '('
-            for char in range(len(values)):
-                bindings += '?,'
-            bindings += ')'
+            isQoe = JsonSettings.parseJson('settings.json','collectQoe')            
+            if isQoe:
+                qoe = self.getJsonValues(self.data.getQoeData())
+                values = cpu + ram + disk + network + qoe                                                
+            else:                
+                values = cpu + ram + disk + network + (0,0,0,0,0)
+            
+            bindings = self._get_bindings(values)
             sql = f"""
-            INSERT INTO stats ('javacpu','cpu_percent', 'loadavg',
-            'javamem', 'freeram', 'usedram',
-            'u_disk','f_disk','read_io','write_io',
-            'sent_b','recv_b', 'errin', 'errout', 'dropin', 'dropout', 
-            'qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size')
-            VALUES {bindings.replace('?,)','?)')}
-            """            
-            self.db.insertData(sql, values)            
+                INSERT INTO stats ('javacpu','cpu_percent', 'loadavg',
+                'javamem', 'freeram', 'usedram',
+                'u_disk','f_disk','errin', 'errout', 'dropin', 'dropout', 
+                'qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size')
+                VALUES {bindings.replace('?,)','?)')}
+            """
+            self.db.insertData(sql, values)
         except Exception as e:
             logging.error(f'{self.cn} Exception: {e}', exc_info=1)
             logging.error(f'{self.cn} SQL: {sql}')
@@ -503,6 +518,17 @@ class DbWorker(object):
                 self.insertStats()
                 self.insertPorts()
                 logging.info(f'{self.cn}')
+        except Exception as e:
+            logging.critical(f'{self.cn} Exception: {e}')
+            logging.critical(f'{self.cn} StackTrace: \n', exc_info=1)
+
+    def periodicTruncate(self):        
+        """
+        Method that recreating the DB based on DbTruncateIntervalSec in settings\n        
+        """
+        try:
+            if self.db.delDb():
+                self.periodicUpdate()
         except Exception as e:
             logging.critical(f'{self.cn} Exception: {e}')
             logging.critical(f'{self.cn} StackTrace: \n', exc_info=1)

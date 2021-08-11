@@ -4,3 +4,4 @@ reports/*.csv
 venv/
 __pycache__
 db/*.db
+mainold.js

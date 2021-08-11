@@ -7,15 +7,15 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/main.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='js/DataTables/datatables.css') }}">
 </head>
-<body onload="headerInfo()">
+<body">
 <img id='site-logo' src="{{ url_for('static', filename='logo.svg') }}" >
 <br>
 <h2 id='app-name'></h2>
-<form action="hostSelector()">
+<form>
   <label id='host-pool' for="hostSelector">Cluster addresses</label>
   <select id="hostSelector" name="hostSelector">
   </select>    
-  <button type="button" onclick="switchHost()">Ok</button>
+  <button type="button" onclick="App.__reinit__()">Ok</button>
 </form>
 <div id='node-info'>
   <table id="header-info">
@@ -25,8 +25,7 @@
       <th>CPU arch</th>    
       <th>CPU cores</th>
       <th>Total RAM (GB)</th>
-      <th>Total disk (GB)</th>
-      <th>isCluster</th> 
+      <th>Total disk (GB)</th>      
     </tr>
     <tr>
       <td id="os"></td>
@@ -34,34 +33,22 @@
       <td id="cpuarch"></td>    
       <td id="cores"></td>
       <td id="ram"></td>
-      <td id="d_total"></td>
-      <td id="isCluster"></td>  
+      <td id="d_total"></td>      
     </tr>
   </table>
   <br>
 </div>
-<button id='table-view' class="tablink" onclick="openPage('v-table', this)"> Table view</button>
-<button class="tablink" onclick="openPage('v-graph', this)"> Build graph</button>
-<button class="tablink" onclick="openPage('v-csv', this)"> CSV report</button>
-<div id="v-table" class="tabcontent">
-  <h4>Concurent sessions (ACS/DB)</h4>
-    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
-      <thead class="thead-dark">
-        <tr id='concurent-thead'>          
-      </tr>
-      </thead>
-      <tbody id="concurent-table-content">
-      </tbody>
-    </table>
+<button id='table-view' class="tablink" onclick="App.open('v-table', this);"> Table view</button>
+<button class="tablink" onclick="App.open('v-graph', this);"> Build graph</button>
+<button class="tablink" onclick="App.open('v-csv', this);"> CSV report</button>
+<div id="v-table" class="tabcontent">  
   <h4>QoE statistics</h4>
       <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
         <thead class="thead-dark">
           <tr>
             <th scope="col">QoE sessions per min</th>
-            <th scope="col">Serials in cpe_data</th>
-            <th scope="col">Serials in kpi_data</th>
-            <th scope="col">Size of ftacs_qoe_ui_data</th>
-            <th scope="col">Size of system</th>
+            <th scope="col">Serials in cpe_data</th>            
+            <th scope="col">Size of ftacs_qoe_ui_data</th>            
             <th scope="col">Updated</th>
         </tr>
         </thead>
@@ -101,9 +88,7 @@
       <thead class="thead-dark">
         <tr>
           <th scope="col">Disk used (GB)</th>
-          <th scope="col">Disk free (GB)</th>
-          <th scope="col">Total number of reads I/O</th>
-          <th scope="col">Total number of writes I/O</th>
+          <th scope="col">Disk free (GB)</th>          
           <th scope="col">Updated</th>
       </tr>
       </thead>
@@ -115,19 +100,26 @@
     <table id='net-table-view-tbl' class='display compact' style="width: 100%">
       <thead class="thead-dark">
         <tr>
-          <th scope="col">Sent (GB)</th>
-          <th scope="col">Received (GB)</th>
-          <th scope="col">Errors receiving</th>
-          <th scope="col">Errors sending</th>
           <th scope="col">Dropped incoming</th>
           <th scope="col">Dropped outgoing</th>
+          <th scope="col">Errors receiving</th>
+          <th scope="col">Errors sending</th>          
           <th scope="col">Updated</th>
         </tr>
       </thead>
       <tbody id="net-table-content">
       </tbody>
+    </table>  
+    <br>
+    <h4>Concurent sessions (ACS/DB)</h4>
+    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
+      <thead class="thead-dark">
+        <tr id='concurent-thead'>          
+      </tr>
+      </thead>
+      <tbody id="concurent-table-content">
+      </tbody>
     </table>
-    <br>  
 </div>
 <br>
 <div id="v-graph" class="tabcontent">
@@ -157,35 +149,33 @@
       <option value="dropin">Dropped incoming</option>
       <option value="dropout">Dropped outgoing</option>
     </select>    
-    <button type="button" onclick="graphView()">Submit</button>
+    <button type="button" onclick="App.graphView()">Submit</button>
   </form>
   <br>
   <div id='graph-div' style='width: 100%'></div>
 </div>
 <br>
-<div id="v-csv" class="tabcontent">  
+<div id="v-csv" class="tabcontent">
   <br>
-  <button id="btnServerReport" type="button" onclick="createServerReport()">Create server stats report</button>
+  <button id="btnServerReport" type="button" onclick="App.createServerReport()">Create server stats report</button>
   <br>
   <br>
-  <button id="btnSessionReport" type="button" onclick="createSessionsReport()">Create sessions (ACS/DB) report</button>
+  <button id="btnSessionReport" type="button" onclick="App.createSessionsReport()">Create sessions (ACS/DB) report</button>
   <br>
   <a id='download-server' href='' style="display: none;"></a>
   <a id='download-sessions' href='' style="display: none;"></a>
   <br>  
 </div>
 <br>
+</body>
 <script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
 <script>
-  $('#table-view').click()  
-  concurentSessionsTable()
-  createTable('net-table-view-tbl', 'net')
-  createTable('cpu-table-view-tbl', 'cpu')
-  createTable('ram-table-view-tbl', 'ram')
-  createTable('disk-table-view-tbl', 'disk')
-  createTable('qoe-table-view-tbl', 'qoe')
+var hostData = JSON.parse('{{ hostData | tojson | safe}}');
+var ip = hostData.ip
+var port = hostData.port
+var App = new AppView(ip, port)
+App.createMainView();
 </script>
-</body>
 </html>

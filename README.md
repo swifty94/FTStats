@@ -14,7 +14,7 @@ Stack:
 Requirements:
 ---
 - Python 3.X
-- Internet connection in order to install dependencies (offline installation to be included in next build)
+- gcc version > 7.4.X
 
 Installation:
 ---

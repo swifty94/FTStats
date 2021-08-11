@@ -95,6 +95,30 @@ body, html {
   width: 100%;
 }
 
+.footer_link{
+  background-color: #555;
+  color: white;
+  border: 1px solid;
+  outline: none;
+  cursor: pointer;
+  padding: 13px 0px;  
+  text-align: center;
+  font-size: 13px;
+  width: 50%;
+}
+
+.foote_bottom_ul_amrc {
+	list-style-type:none;
+	padding:0px;
+	display:table;
+	margin-top: 10px;
+	margin-right: auto;
+	margin-bottom: 10px;
+	margin-left: auto;
+}
+.foote_bottom_ul_amrc li { display:inline;}
+.foote_bottom_ul_amrc li a { color:#999; margin:0 12px;}
+
 #v-table {background-color: #f5f9ff;}
 #v-graph {background-color: #f5f9ff;}
 #v-csv {background-color: #f5f9ff;}
