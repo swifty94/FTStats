@@ -1,7 +1,5 @@
 const today = new Date();
-const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-const dateTime = date+' '+time;
 class AppView {
     constructor(host, port) {
       this.host = host;
@@ -13,7 +11,7 @@ class AppView {
       this.__prop__ = {
         "ObjectName": this.constructor.name,
         "uniqInstanceProperties": [this.host, this.port, this.api_url],
-        "createdAt": dateTime
+        "createdAt": time
       }
       console.log(JSON.stringify(this.__prop__, undefined, 0));
     }
@@ -68,7 +66,7 @@ class AppView {
                 let instancesArray = data.instancesArray        
                 for (const ip in instancesArray) {
                     const element = instancesArray[ip];
-                    if (element != "127.0.0.1") {
+                    if (element != "127.0.0.1" || element != "localhost") {
                         let hostSelector = document.getElementById("hostSelector")                
                         let opt = document.createElement("option");
                         opt.setAttribute("value", element);

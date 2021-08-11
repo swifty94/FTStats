@@ -13,7 +13,7 @@
 
     "isCluster": true,
 
-    "instancesArray": ["127.0.0.1", "138.201.226.204", "demo.friendly-tech.com"],
+    "instancesArray": ["localhost", "demodm.friendly-tech.com", "demo.friendly-tech.com"],
 
     "isHazelcast": true,
 
@@ -21,7 +21,7 @@
 
     "IpAddr": "0.0.0.0",
     
-    "TcpPort": "8080",
+    "TcpPort": "5050",
     
     "DbUpdateIntervalSec": "120",
 
