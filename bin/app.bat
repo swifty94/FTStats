@@ -8,9 +8,12 @@ cd %APP_HOME%
 if exist venv\ (
 	echo "Found venv"
 	.\venv\Scripts\activate
+
+	taskkill /IM pythonw.exe /f
+	pythonw.exe app.py
 	echo "Done"
 	echo "Starting server"
-	pythonw app.py 
+	exit 0
 ) else (
 	echo "Venv not found. Creating + activating"
 	py -m venv venv
@@ -19,7 +22,9 @@ if exist venv\ (
 	FOR %%i in (dep\*.whl) DO venv\Scripts\pip3.9.exe install %%i
 	FOR %%i in (dep\*.tar.gz) DO venv\Scripts\pip3.9.exe install %%i	
     cd %APP_HOME%
+    taskkill /IM pythonw.exe /f
+	pythonw.exe app.py
 	echo "Done"
 	echo "Starting server"
-    pythonw app.py 
+	exit 0
 )

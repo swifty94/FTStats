@@ -14,8 +14,9 @@
 <form>
   <label id='host-pool' for="hostSelector">Cluster addresses</label>
   <select id="hostSelector" name="hostSelector">
+    <option id="def-host-val"></option>
   </select>    
-  <button type="button" onclick="App.__reinit__()">Ok</button>
+  <button type="button" onclick="App.__rebuild__()">Ok</button>
 </form>
 <div id='node-info'>
   <table id="header-info">
@@ -135,15 +136,9 @@
       <option value="usedram">Used RAM</option>
       <option value="u_disk">Used disk</option>
       <option value="f_disk">Free disk</option>
-      <option value="read_io">Total number of reads I/O</option>
-      <option value="write_io">Total number of writes I/O</option>
-      <option value="sent_b">Sent GB</option>
-      <option value="recv_b">Received GB</option>
       <option value="qoe_sessions_min">QoE session per min</option>
       <option value="cpe_data_serial">Serials in cpe_data</option>
-      <option value="kpi_data_serial">Serials in kpi_data</option>
       <option value="qoedb_size">QoE DB size</option>
-      <option value="sysdb_size">System DB size</option>
       <option value="errin">Errors receiving</option>
       <option value="errout">Errors sending</option>
       <option value="dropin">Dropped incoming</option>
@@ -176,6 +171,7 @@ var hostData = JSON.parse('{{ hostData | tojson | safe}}');
 var ip = hostData.ip
 var port = hostData.port
 var App = new AppView(ip, port)
+App.__setVal("def-host-val", hostData.ip)
 App.createMainView();
 </script>
 </html>

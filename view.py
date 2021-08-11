@@ -159,8 +159,7 @@ def stats():
     if 'ip' in args:
       ip = str(request.args['ip'])
     else:
-      ip = "127.0.0.1"
-      
+      ip = "127.0.0.1"      
     hostData = {
       "ip": ip,
       "port": int(JsonSettings.parseJson("settings.json", 'TcpPort'))
