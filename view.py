@@ -12,6 +12,15 @@ logging.config.fileConfig(log_file_path)
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+@app.errorhandler(404)
+def page_not_found(e):
+    outcome = {
+      "ErrorCode": 404,
+      "ErrorText": "NotImplementedEndpoint"
+    }
+    return jsonify(outcome)
+
+
 @app.route('/api/v1/ram', methods=['GET'])
 @cross_origin()
 def ram():

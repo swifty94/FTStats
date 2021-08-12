@@ -66,8 +66,7 @@ class TableStats(object):
         try:        
             sql = f"select {args} from stats order by updated".replace('\'','').replace('(','').replace(')','').replace('updated,','updated')            
             data = self.db.selectData(sql)
-            logging.info(f'SQL query used:\n{sql}')
-            logging.info(f'Data from backend:\n{data}')
+            logging.info(f'SQL query used:\n{sql}')     
             main_array = []
             data_object = {}         
             for item in data:

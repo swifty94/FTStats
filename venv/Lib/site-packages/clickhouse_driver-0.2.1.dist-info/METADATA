@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: clickhouse-driver
+Version: 0.2.1
+Summary: Python driver with native interface for ClickHouse
+Home-page: https://github.com/mymarilyn/clickhouse-driver
+Author: Konstantin Lebedev
+Author-email: kostyan.lebedev@gmail.com
+License: MIT
+Project-URL: Documentation, https://clickhouse-driver.readthedocs.io
+Requires-Dist: pytz
+Requires-Dist: tzlocal (<3.0)
+Provides-Extra: lz4
+Requires-Dist: lz4 (<=3.0.1) ; extra == 'lz4'
+Requires-Dist: clickhouse-cityhash (>=1.0.2.1) ; extra == 'lz4'
+Provides-Extra: numpy
+Requires-Dist: numpy (>=1.12.0) ; extra == 'numpy'
+Requires-Dist: pandas (>=0.24.0) ; extra == 'numpy'
+Provides-Extra: zstd
+Requires-Dist: zstd ; extra == 'zstd'
+Requires-Dist: clickhouse-cityhash (>=1.0.2.1) ; extra == 'zstd'
+
+ClickHouse Python Driver
+
+
