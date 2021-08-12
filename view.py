@@ -13,14 +13,13 @@ app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.errorhandler(404)
-def page_not_found(e):
-    outcome = {
-      "ErrorCode": 404,
-      "ErrorText": "NotImplementedEndpoint"
+def notImplemeted(e):
+    data = {
+      "HttpErrorCode ": f"{e}\n",
+      "FTStatsErrorText ": "NotImplementedEndpoint"
     }
-    return jsonify(outcome)
-
-
+    return render_template('error.html', data=data), 404
+    
 @app.route('/api/v1/ram', methods=['GET'])
 @cross_origin()
 def ram():
