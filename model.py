@@ -57,14 +57,14 @@ class TableStats(object):
         except Exception as e:            
             logging.error(f'{self.cn} Exception: {e}', exc_info=1)
     
-    def _set(self, *args: AnyStr) -> Dict:
+    def _set(self, *args: AnyStr, table='stats') -> Dict:
         """
         :param args* -> key to paste into SELECT statetment\n
         :return -> data dictionary\n
         :e.g: _set("freeram,usedram,javamem,updated")
         """
-        try:        
-            sql = f"select {args} from stats order by updated".replace('\'','').replace('(','').replace(')','').replace('updated,','updated')            
+        try:
+            sql = f"select {args} from {table} order by updated".replace('\'','').replace('(','').replace(')','').replace('updated,','updated')            
             data = self.db.selectData(sql)
             logging.info(f'SQL query used:\n{sql}')     
             main_array = []
@@ -88,6 +88,8 @@ class TableStats(object):
                 data = self._set("errin, errout, dropin, dropout, updated")
             elif kpi == 'qoe':
                 data = self._set("qoe_sessions_min,cpe_data_serial,qoedb_size,updated")
+            elif kpi == 'haz':
+                data = self._set("nodeName, nodeState, clusterState, clusterSize, updated", table='haz_info')
             elif kpi == 'sessions':
                 columns = self.meta.userKeys()
                 columns = str(columns).replace('[','').replace(']','').replace('\'','')
