@@ -13,11 +13,11 @@
 
     "isCluster": true,
 
-    "instancesArray": ["localhost", "demodm.friendly-tech.com", "demo.friendly-tech.com"],
+    "instancesArray": ["127.0.0.1"],
 
     "isHazelcast": true,
 
-    "HazelcastUrl": "http://127.0.0.1:5701/hazelcast/health",
+    "hazelcastPort": "5701",
 
     "IpAddr": "0.0.0.0",
     
@@ -29,6 +29,6 @@
     
     "AppName": "FTStats",
     
-    "Version": 3.0
+    "Version": "3.0"
 
 }

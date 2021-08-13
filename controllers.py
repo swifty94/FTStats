@@ -103,7 +103,7 @@ class DataCollector(object):
                     pass            
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
-            return 0
+            return 1
     
     def _getJbossMem(self) -> float:
         try:
@@ -117,7 +117,7 @@ class DataCollector(object):
                 return ram
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
-            return 0
+            return 1
 
     def _getJbossCpu(self) -> float:
         try:
@@ -131,7 +131,7 @@ class DataCollector(object):
                 return cpu
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
-            return 0
+            return 1
         
     def clickhouseSelect(self, sql):
         try:
@@ -150,7 +150,7 @@ class DataCollector(object):
             return 0
         except NetworkError as ne:
             logging.error(f'{self.cn} Error {ne}', exc_info=1)
-            return 0
+            return 1
 
     def getSys(self):
         try:
@@ -175,7 +175,7 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting SysInfo {e}', exc_info=1)
-            return 0
+            return 1
 
     def getRam(self):
         try:
@@ -189,7 +189,7 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting RAM Data {e}', exc_info=1)
-            return 0
+            return 1
         
 
     def getCpu(self):
@@ -203,7 +203,7 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting CPU data {e}', exc_info=1)
-            return 0
+            return 1
     
     def getNetwork(self) -> Dict:
         try:
@@ -218,7 +218,7 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting Network Data {e}', exc_info=1)
-            return 0
+            return 1
     
     def getDisk(self) -> Dict:
         try:
@@ -231,7 +231,7 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting Disk Data {e}', exc_info=1)
-            return 0
+            return 1
 
     def countPort(self, portNum):
         try:            
@@ -244,7 +244,7 @@ class DataCollector(object):
             return count         
         except Exception as e:
             logging.error(f'{self.cn} Error while getting TcpPortsData, {e}', exc_info=1)
-            return 0
+            return 1
 
     def getDbPorts(self) -> Dict:
         """
@@ -261,7 +261,7 @@ class DataCollector(object):
             return db_data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting DPorts, {e}', exc_info=1)
-            return 0
+            return 1
         
     def getAcsPorts(self) -> Dict:
         try:
@@ -276,7 +276,7 @@ class DataCollector(object):
             return acs_data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting AcsPorts, {e}', exc_info=1)
-            return 0
+            return 1
 
     def getQoeData(self):
         try:            
@@ -291,7 +291,32 @@ class DataCollector(object):
             return qoe_data            
         except Exception as e:
             logging.error(f'{self.cn} Error while getting QoeData, {e}', exc_info=1)                        
-            return 0
+            return 1
+    
+    def getHazStatus(self):
+        try:
+            isHazelcast = bool(JsonSettings.parseJson("settings.json", "isHazelcast"))
+            hazInstances = JsonSettings.parseJson("settings.json", "instancesArray")
+            hazelcastPort = JsonSettings.parseJson("settings.json", "hazelcastPort")
+            print(f"isHazelcast: {isHazelcast}")
+            print(f"hazInstances: {hazInstances}")
+            if isHazelcast:
+                for host in hazInstances:
+                    url = f"http://{host}:{hazelcastPort}/hazelcast/health"
+                    haz = requests.request("GET", url)
+                    print(f"Hazelcast status on instance [{url}]")
+                    print(f"StatusCode: {haz.status_code}")
+                    print(f"ResponseText: \n{haz.text}")
+                
+                #nodeState = haz[14:20]
+        except Exception as e:
+            pass
+    
+    def getErrorTrends(self):
+        try:
+            pass
+        except Exception as e:
+            pass
 
 class SqlProcessor(object):
     """
@@ -553,3 +578,6 @@ class ReportMetaData(object):
             return user_keys
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
+
+d = DataCollector()
+d.getHazStatus()
