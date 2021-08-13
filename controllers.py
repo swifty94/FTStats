@@ -603,6 +603,3 @@ class ReportMetaData(object):
             return user_keys
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
-
-d = DbWorker()
-d.insertHaz()
