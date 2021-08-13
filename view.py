@@ -166,12 +166,18 @@ def stats():
     args = request.args
     if 'ip' in args:
       ip = str(request.args['ip'])
+      isLocalhost = False
     else:
-      ip = "127.0.0.1"      
+      ip = '127.0.0.1'
+      isLocalhost = True
+
     hostData = {
       "ip": ip,
-      "port": int(JsonSettings.parseJson("settings.json", 'TcpPort'))
+      "port": int(JsonSettings.parseJson("settings.json", 'TcpPort')),
+      "isLocalhost": isLocalhost,
+      "isHazelcast": bool(JsonSettings.parseJson("settings.json", 'isHazelcast')),
       }
+
     return render_template('stats.html', hostData=hostData)
   except Exception as e:
     logging.error(f'Request -> /stats -> {e}', exc_info=1)    

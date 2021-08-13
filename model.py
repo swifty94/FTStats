@@ -59,7 +59,8 @@ class TableStats(object):
     
     def _set(self, *args: AnyStr, table='stats') -> Dict:
         """
-        :param args* -> key to paste into SELECT statetment\n
+        :param args* -> key to paste into SELECT statetment
+        \n:param table -> table to use, default=stats
         :return -> data dictionary\n
         :e.g: _set("freeram,usedram,javamem,updated")
         """

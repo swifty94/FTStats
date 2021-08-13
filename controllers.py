@@ -1,22 +1,17 @@
-import re
-import sys
-import json
-import psutil
-import socket
-import os
-from os import path
 import sqlite3
 import platform
 import requests
-from bs4 import BeautifulSoup
-from clickhouse_driver import connect
-from clickhouse_driver.errors import NetworkError
-from typing import Dict, List, AnyStr, Union
+from os import path, times
 import logging
-import logging.config
-
-log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
-logging.config.fileConfig(log_file_path)
+import logging.config        
+from bs4 import BeautifulSoup
+from urllib.request import urlopen
+from clickhouse_driver import connect
+import re, os, sys, json, psutil, socket
+from typing import Dict, List, AnyStr, Union
+from clickhouse_driver.errors import NetworkError
+_log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
+logging.config.fileConfig(_log_file_path)
 
 class JsonSettings(object):
     """
@@ -298,16 +293,27 @@ class DataCollector(object):
             isHazelcast = bool(JsonSettings.parseJson("settings.json", "isHazelcast"))
             hazInstances = JsonSettings.parseJson("settings.json", "instancesArray")
             hazelcastPort = JsonSettings.parseJson("settings.json", "hazelcastPort")
-            print(f"isHazelcast: {isHazelcast}")
-            print(f"hazInstances: {hazInstances}")
+            full_haz_data= {}
             if isHazelcast:
                 for host in hazInstances:
                     url = f"http://{host}:{hazelcastPort}/hazelcast/health"
-                    haz = requests.request("GET", url)
-                    print(f"Hazelcast status on instance [{url}]")
-                    print(f"StatusCode: {haz.status_code}")
-                    print(f"ResponseText: \n{haz.text}")
-                
+                    response = urlopen(url)                                       
+                    haz_data = json.loads(response.read())
+                    node_haz_data = dict()
+                    node_haz_data["nodeName"] = host
+                    del haz_data['clusterSafe']
+                    del haz_data['migrationQueueSize']                    
+                    node_haz_data.update(haz_data)
+                    full_haz_data[host] = node_haz_data
+            return full_haz_data
+                    #print(f"Hazelcast status on instance [{url}]")
+                    #print(f"StatusCode: {haz.status_code}")
+                    #print(f"ResponseText: \n{haz.text}")                
+                #values = [nodeState,clusterState,clusterSize]
+                #keys = ['nodeState','clusterState','clusterSize']
+                #haz_data[nodeName] = JsonSettings.fillDict(keys,values)                                    
+            #haz_data = JsonSettings.fillDict(keys,values)
+            #return haz_data            
                 #nodeState = haz[14:20]
         except Exception as e:
             pass
@@ -475,6 +481,25 @@ class DbWorker(object):
             logging.error(f'{self.cn} Exception: {e}', exc_info=1)
             logging.error(f'{self.cn} SQL: {sql}')
             logging.error(f'{self.cn} Data: {values}')
+    
+    def insertHaz(self):
+        try:
+            haz = self.data.getHazStatus()            
+            sql = """
+            INSERT INTO haz_info ('nodeName','nodeState','clusterState','clusterSize')
+            VALUES (?,?,?,?)
+            """
+            values = self.getJsonValues(haz)
+            values = list()
+            for i in haz.values():
+                for j in i.values():
+                    values.append(j)
+            values = tuple(values)
+            self.db.insertData(sql, values)            
+        except Exception as e:
+            logging.error(f'{self.cn} Exception: {e}', exc_info=1)
+            logging.error(f'{self.cn} SQL: {sql}')
+            logging.error(f'{self.cn} Data: {values}')
 
     def insertStats(self):
         try:
@@ -579,5 +604,5 @@ class ReportMetaData(object):
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
 
-d = DataCollector()
-d.getHazStatus()
+d = DbWorker()
+d.insertHaz()

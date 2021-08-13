@@ -42,20 +42,24 @@
 <button id='table-view' class="tablink" onclick="App.open('v-table', this);"> Table view</button>
 <button class="tablink" onclick="App.open('v-graph', this);"> Build graph</button>
 <button class="tablink" onclick="App.open('v-csv', this);"> CSV report</button>
-<div id="v-table" class="tabcontent">  
-  <h4>QoE statistics</h4>
-      <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
-        <thead class="thead-dark">
-          <tr>
-            <th scope="col">QoE sessions per min</th>
-            <th scope="col">Serials in cpe_data</th>            
-            <th scope="col">Size of ftacs_qoe_ui_data</th>            
-            <th scope="col">Updated</th>
+<div id="v-table" class="tabcontent">
+  {% if isHazelcast %}
+    <h4>CPU</h4>    
+    <table id='haz-table-view-tbl' class="display compact"  style="width: 100%">
+      <thead class="thead-dark">
+        <tr> 
+          <th scope="col">nodeName</th>
+          <th scope="col">nodeState</th>          
+          <th scope="col">clusterState</th>
+          <th scope="col">clusterSize</th>
+          <th scope="col">updated</th>
         </tr>
-        </thead>
-        <tbody id="qoe-table-content">
-        </tbody>
-      </table>
+      </thead>
+      <tbody id="cpu-table-content">
+      </tbody>
+    </table>
+  <br>
+  {% endif %}
   <h4>CPU</h4>    
     <table id='cpu-table-view-tbl' class="display compact"  style="width: 100%">
       <thead class="thead-dark">
@@ -97,6 +101,15 @@
       </tbody>
     </table>
     <br>
+  <h4>Concurent sessions (ACS/DB)</h4>
+    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
+      <thead class="thead-dark">
+        <tr id='concurent-thead'>          
+      </tr>
+      </thead>
+      <tbody id="concurent-table-content">
+      </tbody>
+    </table>
   <h4>Network</h4>
     <table id='net-table-view-tbl' class='display compact' style="width: 100%">
       <thead class="thead-dark">
@@ -112,15 +125,19 @@
       </tbody>
     </table>  
     <br>
-    <h4>Concurent sessions (ACS/DB)</h4>
-    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
-      <thead class="thead-dark">
-        <tr id='concurent-thead'>          
-      </tr>
-      </thead>
-      <tbody id="concurent-table-content">
-      </tbody>
-    </table>
+    <h4>QoE statistics</h4>
+      <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">QoE sessions per min</th>
+            <th scope="col">Serials in cpe_data</th>            
+            <th scope="col">Size of ftacs_qoe_ui_data</th>            
+            <th scope="col">Updated</th>
+        </tr>
+        </thead>
+        <tbody id="qoe-table-content">
+        </tbody>
+      </table>
 </div>
 <br>
 <div id="v-graph" class="tabcontent">
@@ -164,15 +181,19 @@
 <br>
 
 </body>
-<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/AppView.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
 <script>
 var hostData = JSON.parse('{{ hostData | tojson | safe}}');
 var ip = hostData.ip
 var port = hostData.port
-var App = new AppView(ip, port)
-App.__setVal("def-host-val", hostData.ip)
+var isLocal = hostData.isLocalhost
+var isHaz = hostData.isHazelcast
+var App = new AppView(ip, port, isLocal, isHaz)
+if ( isLocal != true || ip != '127.0.0.1' || ip != 'localhost') {
+  App.__setVal("def-host-val", hostData.ip)
+}
 App.createMainView();
 </script>
 </html>
