@@ -558,19 +558,25 @@ class DbWorker(object):
         Method validates if there is DB schema + insert data
         """
         try:
+            logging.info(f'{self.cn} periodicUpdate = Start')
+            isHaz = JsonSettings.parseJson('settings.json','isHazelcast')
             if self.db.isDb():
                 self.insertStats()
                 self.insertPorts()
-                logging.info(f'{self.cn}')            
+                if isHaz:
+                    self.insertHaz()           
             else:
                 self.db.initDb()
                 self.insertSys()
                 self.insertStats()
                 self.insertPorts()
-                logging.info(f'{self.cn}')
+                if isHaz:
+                    self.insertHaz()            
         except Exception as e:
             logging.critical(f'{self.cn} Exception: {e}')
             logging.critical(f'{self.cn} StackTrace: \n', exc_info=1)
+        finally:
+            logging.info(f'{self.cn} periodicUpdate = End')
 
     def periodicTruncate(self):        
         """

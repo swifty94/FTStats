@@ -23,13 +23,28 @@ table, th, td , h3{
   margin-left: 10px;
 }
 
+#clock-div {
+  text-align: left;
+  margin-top: 65px;
+  margin-bottom: -65px;
+  margin-left: 10px;
+}
+
+#clock {
+  text-align: left;
+  margin-top: -47px;
+  margin-bottom: 20px;
+  margin-left: 160px;
+}
+
 #host-pool {
   color: #090909;
   text-align: left;
   margin-top: 80px;
   margin-bottom: 10px;
   margin-left: 10px;
-  font-size: 20px;
+  font-size: 1.5em;
+  font-weight: bold;
 }
 
 #hostSelector {
@@ -54,7 +69,7 @@ body, html {
   padding: 16px 0px;  
   text-align: center;
   font-size: 17px;
-  width: 33%;
+  width: 24%;
 }
 
 .tablink:hover {

@@ -14,10 +14,12 @@ class AppView {
       this.__prop__ = {
         "ObjectName": this.constructor.name,
         "isLocalhost": this.isLocalhost,
+        "isHazelcast": this.isHazelcast,
         "uniqInstanceProperties": [
             this.host, 
             this.port, 
-            this.api_url, 
+            this.api_url,
+            "isHazelcast: "+this.isHazelcast
         ],
         "createdAt": time,
       }
@@ -38,6 +40,25 @@ class AppView {
             console.log('ReinitiationError: '+error)
             this.__debug("__rebuild__", false)
             return false;
+        }
+    }
+
+    __timeNow(){
+        try {
+            var dateNow = new Date();
+            var timeNow = dateNow.getHours() + ":" + dateNow.getMinutes() + ":" + dateNow.getSeconds();
+            return timeNow
+        } catch (error) {
+            console.log("__timeNowError: \n"+ error)
+        }
+    }
+
+    __updateTime(){
+        try {
+            let cur_time = this.__timeNow()
+            document.getElementById('clock').innerHTML = cur_time
+        } catch (error) {
+            console.log("__updateTimerError: \n"+ error)
         }
     }
 

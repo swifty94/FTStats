@@ -10,6 +10,10 @@
 <body">
 <img id='site-logo' src="{{ url_for('static', filename='logo.svg') }}" >
 <br>
+<div id='clock-div'>
+  <h2>Current time: </h2>
+  <h2 id='clock'></h2>
+</div>
 <h2 id='app-name'></h2>
 <form>
   <label id='host-pool' for="hostSelector">Data from server</label>
@@ -39,12 +43,26 @@
   </table>
   <br>
 </div>
+<button class="tablink" onclick="App.open('v-dash', this);"> Dashboard</button>
 <button id='table-view' class="tablink" onclick="App.open('v-table', this);"> Table view</button>
 <button class="tablink" onclick="App.open('v-graph', this);"> Build graph</button>
 <button class="tablink" onclick="App.open('v-csv', this);"> CSV report</button>
+<div id="v-dash" class="tabcontent">
+  <div id='live-stats'>
+    <h3>Live static of main KPIs</h3>
+    <br>
+    <div id='live-bar-chart' style='width: 100%'></div>
+  </div>
+  <br>
+  <div id='avg-stats'>
+    <h3>Average calculations of main KPIs</h3>
+    <br>
+    <div id='avg-bar-chart' style='width: 100%'></div>
+  </div>
+</div>
 <div id="v-table" class="tabcontent">
-  {% if isHazelcast %}
-    <h4>CPU</h4>    
+  {% if hostData.isHazelcast %}
+    <h4>Hazelcast</h4>    
     <table id='haz-table-view-tbl' class="display compact"  style="width: 100%">
       <thead class="thead-dark">
         <tr> 
@@ -195,5 +213,8 @@ if ( isLocal != true || ip != '127.0.0.1' || ip != 'localhost') {
   App.__setVal("def-host-val", hostData.ip)
 }
 App.createMainView();
+setInterval(function(){ 
+  App.__updateTime()
+}, 1000);
 </script>
 </html>
