@@ -214,35 +214,126 @@ class AppView {
         }
     }
 
+    insertAfter(referenceNode, newNode) {
+        try {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+            console.log("Inserted newNode: "+newNode+" after referenceNode: "+referenceNode)
+        } catch (error) {
+            console.log("Error: "+error)
+        }
+        
+    }
+    createMultiKpiSelector(){
+        let is_multi_kpi = document.getElementById("multi-kpi").checked
+        console.log("createMultiKpiSelector: multi-kpi = "+is_multi_kpi)
+        if (is_multi_kpi) {
+            let kpi_selector = document.getElementById('kpi-selector')
+            let new_selector = kpi_selector.cloneNode(true)
+            new_selector.id = "kpi-selector-2"
+            let new_id = new_selector.id
+            this.insertAfter(kpi_selector, new_selector)
+            document.getElementById(new_id).firstElementChild.id = "kpi-label-2"
+            document.getElementById(new_id).firstElementChild.for = "kpi-2"
+            document.getElementById('kpi-selector-2').children[1].id = 'kpi-2'
+            document.getElementById('kpi-selector-2').children[1].name = 'kpi-2'
+            this.__setVal('kpi-label-2', 'Choose second KPI')
+            console.log("Cloned KPI selector with id = "+new_id)
+
+        } else {
+            let new_selector = document.getElementById('kpi-selector-2')
+            new_selector.remove()
+            console.log("Removed second selector kpi-selector-2")
+        }
+    }
+
     async graphView(){
         try {
-            let kpi_id = document.getElementById("kpi").value
-            let node = document.getElementById("kpi");
-            let text = node.options[node.selectedIndex].text;            
-            let response = await fetch(this.api_url+'graphData?kpi='+kpi_id);
-            let data = await response.json();     
-            let layout = {
-                title: text
-            }
-            let graph = {
-                x: data['updated'],
-                y: data[kpi_id],
-                type: 'lines+markers',            
-            };
-            if (document.getElementById('plot-container plotly')){
-                Plotly.purge('graph-div');    
-                Plotly.newPlot('graph-div', [graph], layout)
-            } else {
-                Plotly.newPlot('graph-div', [graph], layout)    
-            }
-           this.__debug("graphView", true);
-           console.log("graphName: "+text);
-           return true;
+            let kpi = document.getElementById("kpi")
+            let kpi2 = document.getElementById("kpi-2")
+
+            if (typeof(kpi) != 'undefined' && kpi != null && typeof(kpi2) != 'undefined' && kpi2 != null) {
+                let kpi_id = document.getElementById("kpi").value
+                let kpi_id2 = document.getElementById("kpi-2").value
+
+                let node = document.getElementById("kpi");
+                let node2 = document.getElementById("kpi-2");
+
+
+                let text = node.options[node.selectedIndex].text;
+                let text2 = node2.options[node2.selectedIndex].text;
+
+                let response = await fetch(this.api_url+'graphData?kpi='+kpi_id);
+                let data = await response.json();
+
+                let response2 = await fetch(this.api_url+'graphData?kpi='+kpi_id2);
+                let data2 = await response2.json();
+
+                let title = text + " vs " + text2
+                let layout = {
+                    title: title
+                }
+                let graph = {
+                    x: data['updated'],
+                    y: data[kpi_id],
+                    type: 'lines+markers',
+                    name: text         
+                };
+                let graph2 = {
+                    x: data2['updated'],
+                    y: data2[kpi_id2],
+                    type: 'lines+markers',
+                    name: text2          
+                };
+                var multiplot = [ graph, graph2 ];
+
+                if (document.getElementById('plot-container plotly')){
+                    Plotly.purge('graph-div');    
+                    Plotly.newPlot('graph-div', multiplot, layout)
+                } else {
+                    Plotly.newPlot('graph-div', multiplot, layout)    
+                }
+               this.__debug("graphView", true);
+               console.log("graphName: "+text);
+               return true;
+            } else if (typeof(kpi) != 'undefined' && kpi != null) {
+                let kpi_id = document.getElementById("kpi").value
+                let node = document.getElementById("kpi");
+                let text = node.options[node.selectedIndex].text;
+                let response = await fetch(this.api_url+'graphData?kpi='+kpi_id);
+                let data = await response.json();
+                let layout = {
+                    title: text
+                }
+                let graph = {
+                    x: data['updated'],
+                    y: data[kpi_id],
+                    type: 'lines+markers',            
+                };
+                if (document.getElementById('plot-container plotly')){
+                    Plotly.purge('graph-div');    
+                    Plotly.newPlot('graph-div', [graph], layout)
+                } else {
+                    Plotly.newPlot('graph-div', [graph], layout)    
+                }
+               this.__debug("graphView", true);
+               console.log("graphName: "+text);
+               return true;
+            }              
         } catch (error) {
             this.__debug("graphView", false);
             console.log("Error: "+ error);
             return false;
         }
+    }
+    
+    deleteGraph(){
+        try {
+            Plotly.purge('graph-div');
+            console.log('Cleaned graphs')
+        } catch (error) {
+            console.log('Error: \n'+error)
+        }
+        Plotly.purge('graph-div');
     }
 
     async createServerReport(){

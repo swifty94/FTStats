@@ -159,30 +159,41 @@
 </div>
 <br>
 <div id="v-graph" class="tabcontent">
-  <p>Select KPI to view the graph</p>
-  <form action="/api/v1/graphData">
-    <label for="kpi">Choose a KPI</label>
-    <select id="kpi" name="kpi">      
-      <option value="cpu_percent">CPU %</option>
-      <option value="loadavg">Load average</option>
-      <option value="javacpu">Java CPU usage</option>
-      <option value="javamem">Java memory</option>
-      <option value="freeram">Free RAM</option>
-      <option value="usedram">Used RAM</option>
-      <option value="u_disk">Used disk</option>
-      <option value="f_disk">Free disk</option>
-      <option value="qoe_sessions_min">QoE session per min</option>
-      <option value="cpe_data_serial">Serials in cpe_data</option>
-      <option value="qoedb_size">QoE DB size</option>
-      <option value="errin">Errors receiving</option>
-      <option value="errout">Errors sending</option>
-      <option value="dropin">Dropped incoming</option>
-      <option value="dropout">Dropped outgoing</option>
-    </select>    
-    <button type="button" onclick="App.graphView()">Submit</button>
-  </form>
-  <br>
-  <div id='graph-div' style='width: 100%'></div>
+  <div id='graph-menu'>
+    <p>Select KPI to view the graph</p>
+    <form id='kpi-selector' action="/api/v1/graphData">        
+      <label id='kpi-label' for="kpi">Choose a KPI</label>
+      <select id="kpi" name="kpi">      
+        <option value="cpu_percent">CPU %</option>
+        <option value="loadavg">Load average</option>
+        <option value="javacpu">Java CPU usage</option>
+        <option value="javamem">Java memory</option>
+        <option value="freeram">Free RAM</option>
+        <option value="usedram">Used RAM</option>
+        <option value="u_disk">Used disk</option>
+        <option value="f_disk">Free disk</option>
+        <option value="qoe_sessions_min">QoE session per min</option>
+        <option value="cpe_data_serial">Serials in cpe_data</option>
+        <option value="qoedb_size">QoE DB size</option>
+        <option value="errin">Errors receiving</option>
+        <option value="errout">Errors sending</option>
+        <option value="dropin">Dropped incoming</option>
+        <option value="dropout">Dropped outgoing</option>
+      </select>
+    </form>
+    <br>
+      <label id="multi-kpi-label" for="multi-kpi">Compare KPIs </label>
+      <input onchange="App.createMultiKpiSelector();" type="checkbox" id="multi-kpi" name="multi-kpi"
+          unchecked>
+    <br>
+    <button id="graph-btn" type="button" onclick="App.graphView()">Submit</button>
+    <br>
+    <button id="graph-btn" type="button" onclick="App.deleteGraph()">Clean graph</button>
+    <br>
+  </div>
+  <div>
+    <div id='graph-div' style='width: 100%'></div>
+  </div>
 </div>
 <br>
 <div id="v-csv" class="tabcontent">
