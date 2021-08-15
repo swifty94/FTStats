@@ -297,8 +297,8 @@ class DataCollector(object):
             if isHazelcast:
                 for host in hazInstances:
                     url = f"http://{host}:{hazelcastPort}/hazelcast/health"
-                    response = urlopen(url)                                       
-                    haz_data = json.loads(response.read())
+                    response = requests.get(url)                                     
+                    haz_data = json.loads(response.text)
                     node_haz_data = dict()
                     node_haz_data["nodeName"] = host
                     del haz_data['clusterSafe']
@@ -490,13 +490,14 @@ class DbWorker(object):
             INSERT INTO haz_info ('nodeName','nodeState','clusterState','clusterSize')
             VALUES (?,?,?,?)
             """
-            values = self.getJsonValues(haz)
             values = list()
             for i in haz.values():
                 for j in i.values():
                     values.append(j)
-            values = tuple(values)
-            self.db.insertData(sql, values)            
+                values = tuple(values)
+                self.db.insertData(sql, values)
+                values = list(values)
+                values.clear()
         except Exception as e:
             logging.error(f'{self.cn} Exception: {e}', exc_info=1)
             logging.error(f'{self.cn} SQL: {sql}')
@@ -520,7 +521,7 @@ class DbWorker(object):
                 INSERT INTO stats ('javacpu','cpu_percent', 'loadavg',
                 'javamem', 'freeram', 'usedram',
                 'u_disk','f_disk','errin', 'errout', 'dropin', 'dropout', 
-                'qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size')
+                'qoe_sessions_min','cpe_data_serial','qoedb_size')
                 VALUES {bindings.replace('?,)','?)')}
             """
             self.db.insertData(sql, values)
