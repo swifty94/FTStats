@@ -219,7 +219,7 @@ class DataCollector(object):
         try:
             d = psutil.disk_usage(self.mountpoint)
             u_disk = round((d.used/1024/1024/1024),2)
-            f_disk = round((d.free/1024/1024/1024),2)                    
+            f_disk = round((d.free/1024/1024/1024),2)         
             values = [u_disk,f_disk]
             keys = ['u_disk','f_disk']
             data = JsonSettings.fillDict(keys,values)                    
@@ -306,23 +306,24 @@ class DataCollector(object):
                     node_haz_data.update(haz_data)
                     full_haz_data[host] = node_haz_data
             return full_haz_data
-                    #print(f"Hazelcast status on instance [{url}]")
-                    #print(f"StatusCode: {haz.status_code}")
-                    #print(f"ResponseText: \n{haz.text}")                
-                #values = [nodeState,clusterState,clusterSize]
-                #keys = ['nodeState','clusterState','clusterSize']
-                #haz_data[nodeName] = JsonSettings.fillDict(keys,values)                                    
-            #haz_data = JsonSettings.fillDict(keys,values)
-            #return haz_data            
-                #nodeState = haz[14:20]
         except Exception as e:
-            pass
+            logging.error(f'{self.cn} Error while getting HazelcastData, {e}', exc_info=1)                        
+            return 1
     
-    def getErrorTrends(self):
+    def getliveUpdate(self):
         try:
-            pass
+            cpu = self.getCpu()
+            ram = self.getRam()
+            disk = self.getDisk()
+            data = {
+                "cpu": cpu,
+                "ram": ram,
+                "disk": disk
+            }
+            return data
         except Exception as e:
-            pass
+            logging.error(f'{self.cn} Error while getting LiveUpdateData, {e}', exc_info=1)                        
+            return 1
 
 class SqlProcessor(object):
     """

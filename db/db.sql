@@ -36,3 +36,12 @@ CREATE TABLE IF NOT EXISTS `ports` (
 	`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	`updated`	TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE "haz_info" (
+	"id"	INTEGER NOT NULL,
+	"nodeName"	TEXT,
+	"nodeState"	TEXT,
+	"clusterState"	TEXT,
+	"clusterSize"	TEXT,
+	"updated"	timestamp DATE DEFAULT (datetime(''now'',''localtime''))',
+	PRIMARY KEY("id" AUTOINCREMENT)

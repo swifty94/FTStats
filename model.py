@@ -1,10 +1,10 @@
 import os, time, datetime, csv
 from typing import Dict, List, AnyStr, Union
-from controllers import JsonSettings, SqlProcessor, ReportMetaData, logging
+import controllers
 
 class GraphStats(object):
     def __init__(self):
-        self.db = SqlProcessor()
+        self.db = controllers.SqlProcessor()
         self.cn = __class__.__name__
     
     def KpiVsTime(self, kpi: str) -> Dict:
@@ -34,15 +34,15 @@ class GraphStats(object):
 
             return data            
         except Exception as e:
-            logging.error(f'{self.cn} Exception: {e}', exc_info=1)
+            controllers.logging.error(f'{self.cn} Exception: {e}', exc_info=1)
         finally:
-            logging.info(f'{self.cn} GeneratedGraph: {kpi}')
+            controllers.logging.info(f'{self.cn} GeneratedGraph: {kpi}')
 
 class TableStats(object):
     def __init__(self):
         self.cn = __class__.__name__
-        self.db = SqlProcessor()
-        self.meta = ReportMetaData()
+        self.db = controllers.SqlProcessor()
+        self.meta = controllers.ReportMetaData()
 
     def _getMeta(self):
         try:
@@ -55,7 +55,7 @@ class TableStats(object):
             json['timestamp'] = 'Updated'
             return json
         except Exception as e:            
-            logging.error(f'{self.cn} Exception: {e}', exc_info=1)
+            controllers.logging.error(f'{self.cn} Exception: {e}', exc_info=1)
     
     def _set(self, *args: AnyStr, table='stats') -> Dict:
         """
@@ -67,7 +67,7 @@ class TableStats(object):
         try:
             sql = f"select {args} from {table} order by updated".replace('\'','').replace('(','').replace(')','').replace('updated,','updated')            
             data = self.db.selectData(sql)
-            logging.info(f'SQL query used:\n{sql}')     
+            controllers.logging.info(f'SQL query used:\n{sql}')     
             main_array = []
             data_object = {}         
             for item in data:
@@ -75,7 +75,7 @@ class TableStats(object):
             data_object["data"] = main_array        
             return data_object
         except Exception as e:            
-            logging.error(f'{self.cn} Exception: {e}', exc_info=1)
+            controllers.logging.error(f'{self.cn} Exception: {e}', exc_info=1)
         
     def createView(self, kpi: str) -> Dict:
         try:
@@ -101,20 +101,42 @@ class TableStats(object):
                     main_array.append(list(item))
                 data_object["data"] = main_array        
                 return data_object                        
-                logging.info(f'Data from backend:\n{data_object}')
-            
             return data
         except Exception as e:
-            logging.error(f'{self.cn} Exception: {e}', exc_info=1)
+            controllers.logging.error(f'{self.cn} Exception: {e}', exc_info=1)
         finally:
-            logging.info(f'{self.cn} GeneratedView: {kpi}')
-
+            controllers.logging.info(f'{self.cn} GeneratedView: {kpi}')
+        
+    
+    def getAvgStats(self):
+        try:
+            avg_sql = """
+SELECT 
+round(sum(javacpu)/count(javacpu),2) as javacpu_avg,
+round(sum(cpu_percent)/count(cpu_percent),2) as cpu_percent_avg,
+round(sum(loadavg)/count(loadavg),2) as loadavg_avg,
+round(sum(freeram)/count(freeram),2) as freeram_avg,
+round(sum(usedram)/count(usedram),2) as usedram_avg,
+round(sum(javamem)/count(javamem),2) as javamem_avg,
+round(sum(u_disk)/count(u_disk),2) as u_disk_avg
+FROM stats
+            """
+            keys = ['javacpu_avg','cpu_percent_avg','loadavg_avg','freeram_avg','usedram_avg','javamem_avg','u_disk_avg']
+            values = self.db.selectData(avg_sql)
+            data = {}
+            for i in values:
+                for j,k in zip(i,keys):
+                    data[k] = j
+            controllers.logging.info(f'{self.cn} getAvgStats: processed data.keys \n{data.keys()}')
+            return data            
+        except Exception as e:
+            controllers.logging.error(f'{self.cn} Exception: {e}', exc_info=1)
 
 class CsvStats(object):
     def __init__(self):
         self.cn = __class__.__name__        
-        self.db = SqlProcessor()
-        self.meta = ReportMetaData()
+        self.db = controllers.SqlProcessor()
+        self.meta = controllers.ReportMetaData()
                 
     def createServerReport(self):        
         try:                                          
@@ -132,9 +154,9 @@ class CsvStats(object):
                 data = {'filename': report_name.replace('reports/','')}
                 return data
         except Exception as e:
-            logging.error(f'{self.cn} Exception {e}',exc_info=1)
+            controllers.logging.error(f'{self.cn} Exception {e}',exc_info=1)
         finally:
-            logging.info(f'{self.cn} GeneratedCsv: {data}')
+            controllers.logging.info(f'{self.cn} GeneratedCsv: {data}')
 
     def createSessionsReport(self):        
         try:                                          
@@ -154,6 +176,10 @@ class CsvStats(object):
                 data = {'filename': report_name.replace('reports/','')}
                 return data
         except Exception as e:
-            logging.error(f'{self.cn} Exception {e}',exc_info=1)
+            controllers.logging.error(f'{self.cn} Exception {e}',exc_info=1)
         finally:
-            logging.info(f'{self.cn} GeneratedCsv: {data}')
+            controllers.logging.info(f'{self.cn} GeneratedCsv: {data}')
+
+
+txt = TableStats()
+txt.getAvgStats()

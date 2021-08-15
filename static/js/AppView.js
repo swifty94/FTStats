@@ -2,24 +2,25 @@ const today = new Date();
 const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
 
 class AppView {
-    constructor(host, port, isLocalhost, isHazelcast) {
+    constructor(host, port, isLocalhost, isHazelcast, isLiveStats) {
       this.host = host;
       this.port = port;
       this.isLocalhost = isLocalhost;
       this.isHazelcast = isHazelcast;
+      this.isLiveStats = isLiveStats;
       this.api_url = "http://"+this.host+":"+this.port+"/api/v1/"
       history.replaceState && history.replaceState(
         null, '', location.pathname + location.search.replace(/[\?&]ip=[^&]+/, '').replace(/^&/, '?')
       );
       this.__prop__ = {
         "ObjectName": this.constructor.name,
-        "isLocalhost": this.isLocalhost,
-        "isHazelcast": this.isHazelcast,
         "uniqInstanceProperties": [
             this.host, 
             this.port, 
             this.api_url,
-            "isHazelcast: "+this.isHazelcast
+            "isLocalhost: "+ this.isLocalhost,
+            "isHazelcast: "+ this.isHazelcast,
+            "isLiveStats: "+ this.isLiveStats
         ],
         "createdAt": time,
       }
@@ -334,6 +335,32 @@ class AppView {
             console.log('Error: \n'+error)
         }
         Plotly.purge('graph-div');
+    }
+
+    async liveGraph(){
+        try {
+            let response = await fetch(this.api_url+'liveUpdate');
+            let data = await response.json();
+            let cpu = data.cpu
+            let ram = data.ram
+            let disk = data.disk
+            var barData = [
+                {
+                  x: ['CPU usage Java', 'CPU %', 'CPU load avg', 'Free RAM', 'Used RAM', 'Java RAM', 'Disk used'],
+                  y: [cpu.javacpu, cpu.cpu_percent, , cpu.loadavg, ram.freeram, ram.usedram, ram.javamem, disk.u_disk ],
+                  type: 'bar'
+                }
+              ];
+            if (document.getElementById('plot-container plotly')){
+                Plotly.purge('live-bar-chart');    
+                Plotly.newPlot('live-bar-chart', barData);
+            } else {
+                Plotly.newPlot('live-bar-chart', barData);
+            }
+            console.log("LiveUpdate = True")
+        } catch (error) {
+            console.log("Error: "+error)
+        }
     }
 
     async createServerReport(){

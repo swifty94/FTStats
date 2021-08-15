@@ -13,9 +13,11 @@
 
     "isCluster": true,
 
-    "instancesArray": ["127.0.0.1"],
+    "instancesArray": ["127.0.0.1", "demo.friendly-tech.com"],
 
-    "isHazelcast": true,
+    "isHazelcast": false,
+
+    "isLiveStats": true,
 
     "hazelcastPort": "5701",
 
