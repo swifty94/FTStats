@@ -16,7 +16,7 @@
 </div>
 <h2 id='app-name'></h2>
 <form>
-  <label id='host-pool' for="hostSelector">Data from server</label>
+  <label id='host-pool' for="hostSelector">View stats on server: </label>
   <select id="hostSelector" name="hostSelector">
     <option id="def-host-val"></option>
   </select>    
@@ -26,7 +26,8 @@
   <table id="header-info">
     <tr>
       <th>OS type</th>
-      <th>Server name</th>
+      <th>Node name</th>
+      <th>Node address</th>
       <th>CPU arch</th>    
       <th>CPU cores</th>
       <th>Total RAM (GB)</th>
@@ -34,7 +35,8 @@
     </tr>
     <tr>
       <td id="os"></td>
-      <td id="nodename"></td>      
+      <td id="nodename"></td>
+      <td id="nodeaddr">{{ hostData.ip }}</td>   
       <td id="cpuarch"></td>    
       <td id="cores"></td>
       <td id="ram"></td>
@@ -43,10 +45,10 @@
   </table>
   <br>
 </div>
-<button class="tablink" onclick="App.open('v-dash', this);"> Dashboard</button>
+<button id='dashboard-view' class="tablink" onclick="App.open('v-dash', this);"> Dashboard</button>
 <button id='table-view' class="tablink" onclick="App.open('v-table', this);"> Table view</button>
-<button class="tablink" onclick="App.open('v-graph', this);"> Build graph</button>
-<button class="tablink" onclick="App.open('v-csv', this);"> CSV report</button>
+<button id='graph-view' class="tablink" onclick="App.open('v-graph', this);"> Build graph</button>
+<button id='csv-view' class="tablink" onclick="App.open('v-csv', this);"> CSV report</button>
 <div id="v-dash" class="tabcontent">
   <div id='avg-stats'>
     <h2>Average value of main system KPIs</h2>

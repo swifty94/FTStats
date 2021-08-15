@@ -417,7 +417,7 @@ class AppView {
 
     async createMainView(){
         try {
-            document.getElementById("table-view").click();
+            document.getElementById("dashboard-view").click();
             this.appHeader();            
             this.concurentSessionsTable();
             this.getAllTables()
