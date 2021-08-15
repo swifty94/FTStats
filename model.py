@@ -179,7 +179,3 @@ class CsvStats(object):
             controllers.logging.error(f'{self.cn} Exception {e}',exc_info=1)
         finally:
             controllers.logging.info(f'{self.cn} GeneratedCsv: {data}')
-
-
-txt = TableStats()
-txt.getAvgStats()

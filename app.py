@@ -21,8 +21,7 @@ class FTStatsServer(object):
         try:            
             scheduler = BackgroundScheduler()
             DbUpdate = controllers.DbWorker()
-            controllers.logging.info(f'{self.cn} Database validation')
-            DbUpdate.periodicUpdate()            
+            controllers.logging.info(f'{self.cn} Database validation')                    
             if self.dbUpdateInterval == 0:                
                 controllers.logging.info(f"{self.cn} DbUpdate:  !!!DISABLED.")
                 controllers.logging.info(f'{self.cn} Setting up Flask WSGI server')
