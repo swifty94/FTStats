@@ -243,7 +243,8 @@ var port = hostData.port
 var isLocal = hostData.isLocalhost
 var isHaz = hostData.isHazelcast
 var isLive = hostData.isLiveStats
-var App = new AppView(ip, port, isLocal, isHaz, isLive)
+var creator = hostData.visitor
+var App = new AppView(ip, port, isLocal, isHaz, isLive, creator)
 if ( isLocal != true || ip != '127.0.0.1' || ip != 'localhost') {
   App.__setVal("def-host-val", hostData.ip)
 }

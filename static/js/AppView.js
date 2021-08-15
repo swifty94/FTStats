@@ -2,16 +2,19 @@ const today = new Date();
 const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
 
 class AppView {
-    constructor(host, port, isLocalhost, isHazelcast, isLiveStats) {
+    constructor(host, port, isLocalhost, isHazelcast, isLiveStats, creator) {
       this.host = host;
       this.port = port;
       this.isLocalhost = isLocalhost;
       this.isHazelcast = isHazelcast;
       this.isLiveStats = isLiveStats;
+      this.creator = creator;
       this.api_url = "http://"+this.host+":"+this.port+"/api/v1/"
+
       history.replaceState && history.replaceState(
         null, '', location.pathname + location.search.replace(/[\?&]ip=[^&]+/, '').replace(/^&/, '?')
       );
+
       this.__prop__ = {
         "ObjectName": this.constructor.name,
         "uniqInstanceProperties": [
@@ -22,6 +25,7 @@ class AppView {
             "isHazelcast: "+ this.isHazelcast,
             "isLiveStats: "+ this.isLiveStats
         ],
+        "createdBy": creator,
         "createdAt": time,
       }
       console.log(JSON.stringify(this.__prop__, undefined, 2));

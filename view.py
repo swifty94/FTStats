@@ -172,24 +172,28 @@ def download_file():
 @app.route('/stats', methods=['POST', 'GET'])
 def stats():
   try:
+    port = int(controllers.JsonSettings.parseJson("settings.json", 'TcpPort'))        
     args = request.args
+    visitor = request.remote_addr
     if 'ip' in args:
       ip = str(request.args['ip'])
       isLocalhost = False
     else:
-      ip = '127.0.0.1'
+      url = request.url
+      ip = url.replace('http://','').replace(f':{port}/stats','')
       isLocalhost = True
     t = model.TableStats()
     avgData = t.getAvgStats()
     hostData = {
       "ip": ip,
-      "port": int(controllers.JsonSettings.parseJson("settings.json", 'TcpPort')),
+      "port": port,
       "isLiveStats": bool(controllers.JsonSettings.parseJson("settings.json", 'isLiveStats')),
       "isLocalhost": isLocalhost,
       "isHazelcast": bool(controllers.JsonSettings.parseJson("settings.json", 'isHazelcast')),
-      "avgData": avgData
+      "avgData": avgData,
+      "visitor": visitor
       }
-
+    logging.info(f"[ {visitor} ] Request to -> /stats")
     return render_template('stats.html', hostData=hostData)
   except Exception as e:
-    logging.error(f'Request -> /stats -> {e}', exc_info=1)    
+    logging.error(f'Request -> /stats -> {e}', exc_info=1)
