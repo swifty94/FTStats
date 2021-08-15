@@ -7,15 +7,27 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/main.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='js/DataTables/datatables.css') }}">
 </head>
-<body onload="headerInfo()">
+<body">
 <img id='site-logo' src="{{ url_for('static', filename='logo.svg') }}" >
 <br>
+<div id='clock-div'>
+  <h2>Current time: </h2>
+  <h2 id='clock'></h2>
+</div>
 <h2 id='app-name'></h2>
+<form>
+  <label id='host-pool' for="hostSelector">View stats on server: </label>
+  <select id="hostSelector" name="hostSelector">
+    <option id="def-host-val"></option>
+  </select>    
+  <button type="button" onclick="App.__rebuild__()">Ok</button>
+</form>
 <div id='node-info'>
   <table id="header-info">
     <tr>
       <th>OS type</th>
-      <th>Node name</th> 
+      <th>Node name</th>
+      <th>Node address</th>
       <th>CPU arch</th>    
       <th>CPU cores</th>
       <th>Total RAM (GB)</th>
@@ -24,6 +36,7 @@
     <tr>
       <td id="os"></td>
       <td id="nodename"></td>
+      <td id="nodeaddr">{{ hostData.ip }}</td>   
       <td id="cpuarch"></td>    
       <td id="cores"></td>
       <td id="ram"></td>
@@ -32,34 +45,62 @@
   </table>
   <br>
 </div>
-<button id='table-view' class="tablink" onclick="openPage('v-table', this)"> Table view</button>
-<button class="tablink" onclick="openPage('v-graph', this)"> Build graph</button>
-<button class="tablink" onclick="openPage('v-csv', this)"> CSV report</button>
-<div id="v-table" class="tabcontent">
-  <h4>Concurent sessions (ACS/DB)</h2>
-    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
+<button id='dashboard-view' class="tablink" onclick="App.open('v-dash', this);"> Dashboard</button>
+<button id='table-view' class="tablink" onclick="App.open('v-table', this);"> Table view</button>
+<button id='graph-view' class="tablink" onclick="App.open('v-graph', this);"> Build graph</button>
+<button id='csv-view' class="tablink" onclick="App.open('v-csv', this);"> CSV report</button>
+<div id="v-dash" class="tabcontent">
+  <div id='avg-stats'>
+    <h2>Average value of main system KPIs</h2>
+    <table id='avg-tbl' class="display compact"  style="width: 100%">
       <thead class="thead-dark">
-        <tr id='concurent-thead'>          
-      </tr>
+        <tr> 
+          <th scope="col">Jboss CPU</th>
+          <th scope="col">CPU %</th>          
+          <th scope="col">Load avg</th>
+          <th scope="col">Free RAM (GB)</th>
+          <th scope="col">Used RAM (GB)</th>
+          <th scope="col">Jboss RAM (GB)</th>
+          <th scope="col">Disk used (GB)</th>
+        </tr>
       </thead>
-      <tbody id="concurent-table-content">
+      <tbody id="cpu-table-content"> 			
+        <td>{{ hostData.avgData.javacpu_avg }}</td>
+        <td>{{ hostData.avgData.cpu_percent_avg }}</td>
+        <td>{{ hostData.avgData.loadavg_avg }}</td>
+        <td>{{ hostData.avgData.freeram_avg }}</td>
+        <td>{{ hostData.avgData.usedram_avg }}</td>
+        <td>{{ hostData.avgData.javamem_avg }}</td>
+        <td>{{ hostData.avgData.u_disk_avg }}</td>
+      </tr> 
       </tbody>
     </table>
-  <h4>QoE statistics</h2>
-      <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
-        <thead class="thead-dark">
-          <tr>
-            <th scope="col">QoE sessions per min</th>
-            <th scope="col">Serials in cpe_data</th>
-            <th scope="col">Serials in kpi_data</th>
-            <th scope="col">Size of ftacs_qoe_ui_data</th>
-            <th scope="col">Size of system</th>
-            <th scope="col">Updated</th>
+  </div>
+  <div id='live-stats'>
+    <h2>Live statistic ( every second )</h2>
+    <br>
+    <div id='live-bar-chart' style='width: 100%'></div>
+  </div>
+  <br>
+</div>
+<div id="v-table" class="tabcontent">
+  {% if hostData.isHazelcast %}
+    <h4>Hazelcast</h4>    
+    <table id='haz-table-view-tbl' class="display compact"  style="width: 100%">
+      <thead class="thead-dark">
+        <tr> 
+          <th scope="col">nodeName</th>
+          <th scope="col">nodeState</th>          
+          <th scope="col">clusterState</th>
+          <th scope="col">clusterSize</th>
+          <th scope="col">updated</th>
         </tr>
-        </thead>
-        <tbody id="qoe-table-content">
-        </tbody>
-      </table>
+      </thead>
+      <tbody id="cpu-table-content">
+      </tbody>
+    </table>
+  <br>
+  {% endif %}
   <h4>CPU</h4>    
     <table id='cpu-table-view-tbl' class="display compact"  style="width: 100%">
       <thead class="thead-dark">
@@ -74,7 +115,7 @@
       </tbody>
     </table>
   <br>
-  <h4>RAM</h2>
+  <h4>RAM</h4>
     <table id='ram-table-view-tbl' class="display compact" style="width: 100%">
       <thead class="thead-dark">
         <tr>
@@ -88,14 +129,12 @@
       </tbody>
     </table>
     <br>
-  <h4>Disk</h2>
+  <h4>Disk</h4>
     <table id='disk-table-view-tbl' class="display compact" style="width: 100%">
       <thead class="thead-dark">
         <tr>
           <th scope="col">Disk used (GB)</th>
-          <th scope="col">Disk free (GB)</th>
-          <th scope="col">Total number of reads I/O</th>
-          <th scope="col">Total number of writes I/O</th>
+          <th scope="col">Disk free (GB)</th>          
           <th scope="col">Updated</th>
       </tr>
       </thead>
@@ -103,73 +142,117 @@
       </tbody>
     </table>
     <br>
-  <h4>Network</h2>
+  <h4>Concurent sessions (ACS/DB)</h4>
+    <table id='concurent-table-view-tbl' class='display compact'  style="width: 100%">
+      <thead class="thead-dark">
+        <tr id='concurent-thead'>          
+      </tr>
+      </thead>
+      <tbody id="concurent-table-content">
+      </tbody>
+    </table>
+  <h4>Network</h4>
     <table id='net-table-view-tbl' class='display compact' style="width: 100%">
       <thead class="thead-dark">
         <tr>
-          <th scope="col">Sent (GB)</th>
-          <th scope="col">Received (GB)</th>          
+          <th scope="col">Dropped incoming</th>
+          <th scope="col">Dropped outgoing</th>
+          <th scope="col">Errors receiving</th>
+          <th scope="col">Errors sending</th>          
           <th scope="col">Updated</th>
-      </tr>
+        </tr>
       </thead>
       <tbody id="net-table-content">
       </tbody>
-    </table>
-    <br>  
+    </table>  
+    <br>
+    <h4>QoE statistics</h4>
+      <table id='qoe-table-view-tbl' class='display compact'  style="width: 100%">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">QoE sessions per min</th>
+            <th scope="col">Serials in cpe_data</th>            
+            <th scope="col">Size of ftacs_qoe_ui_data</th>            
+            <th scope="col">Updated</th>
+        </tr>
+        </thead>
+        <tbody id="qoe-table-content">
+        </tbody>
+      </table>
 </div>
 <br>
 <div id="v-graph" class="tabcontent">
-  <p>Select KPI to view the graph</p>
-  <form action="/api/v1/graphData">
-    <label for="kpi">Choose a KPI</label>
-    <select id="kpi" name="kpi">      
-      <option value="cpu_percent">CPU %</option>
-      <option value="loadavg">Load average</option>
-      <option value="javacpu">Java CPU usage</option>
-      <option value="javamem">Java memory</option>
-      <option value="freeram">Free RAM</option>
-      <option value="usedram">Used RAM</option>
-      <option value="u_disk">Used disk</option>
-      <option value="f_disk">Free disk</option>
-      <option value="read_io">Total number of reads I/O</option>
-      <option value="write_io">Total number of writes I/O</option>
-      <option value="sent_b">Sent GB</option>
-      <option value="recv_b">Received GB</option>
-      <option value="qoe_sessions_min">QoE session per min</option>
-      <option value="cpe_data_serial">Serials in cpe_data</option>
-      <option value="kpi_data_serial">Serials in kpi_data</option>
-      <option value="qoedb_size">QoE DB size</option>
-      <option value="sysdb_size">System DB size</option>      
-    </select>    
-    <button type="button" onclick="graphView()">Submit</button>
-  </form>
-  <br>
-  <div id='graph-div' style='width: 100%'></div>
+  <div id='graph-menu'>
+    <p>Select KPI to view the graph</p>
+    <form id='kpi-selector' action="/api/v1/graphData">        
+      <label id='kpi-label' for="kpi">Choose a KPI</label>
+      <select id="kpi" name="kpi">      
+        <option value="cpu_percent">CPU %</option>
+        <option value="loadavg">Load average</option>
+        <option value="javacpu">Java CPU usage</option>
+        <option value="javamem">Java memory</option>
+        <option value="freeram">Free RAM</option>
+        <option value="usedram">Used RAM</option>
+        <option value="u_disk">Used disk</option>
+        <option value="f_disk">Free disk</option>
+        <option value="qoe_sessions_min">QoE session per min</option>
+        <option value="cpe_data_serial">Serials in cpe_data</option>
+        <option value="qoedb_size">QoE DB size</option>
+        <option value="errin">Errors receiving</option>
+        <option value="errout">Errors sending</option>
+        <option value="dropin">Dropped incoming</option>
+        <option value="dropout">Dropped outgoing</option>
+      </select>
+    </form>
+    <br>
+      <label id="multi-kpi-label" for="multi-kpi">Compare KPIs </label>
+      <input onchange="App.createMultiKpiSelector();" type="checkbox" id="multi-kpi" name="multi-kpi"
+          unchecked>
+    <br>
+    <button id="graph-btn" type="button" onclick="App.graphView()">Submit</button>
+    <br>
+    <button id="graph-btn" type="button" onclick="App.deleteGraph()">Clean graph</button>
+    <br>
+  </div>
+  <div>
+    <div id='graph-div' style='width: 100%'></div>
+  </div>
 </div>
 <br>
-<div id="v-csv" class="tabcontent">  
+<div id="v-csv" class="tabcontent">
   <br>
-  <button id="reportSelector" type="button" onclick="createServerReport()">Create server stats report</button>
+  <button id="btnServerReport" type="button" onclick="App.createServerReport()">Create server stats report</button>
   <br>
   <br>
-  <button id="reportSelector" type="button" onclick="createSessionsReport()">Create sessions (ACS/DB) report</button>
+  <button id="btnSessionReport" type="button" onclick="App.createSessionsReport()">Create sessions (ACS/DB) report</button>
   <br>
   <a id='download-server' href='' style="display: none;"></a>
   <a id='download-sessions' href='' style="display: none;"></a>
   <br>  
 </div>
 <br>
-<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+<script type="text/javascript" src="{{ url_for('static', filename='js/AppView.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/DataTables/datatables.js') }}"></script>
 <script>
-$('#table-view').click()   
-concurentSessionsTable()  
-createTable('cpu-table-view-tbl', 'cpu')
-createTable('ram-table-view-tbl', 'ram')
-createTable('disk-table-view-tbl', 'disk')
-createTable('net-table-view-tbl', 'net')
-createTable('qoe-table-view-tbl', 'qoe')
+var hostData = JSON.parse('{{ hostData | tojson | safe}}');
+var ip = hostData.ip
+var port = hostData.port
+var isLocal = hostData.isLocalhost
+var isHaz = hostData.isHazelcast
+var isLive = hostData.isLiveStats
+var App = new AppView(ip, port, isLocal, isHaz, isLive)
+if ( isLocal != true || ip != '127.0.0.1' || ip != 'localhost') {
+  App.__setVal("def-host-val", hostData.ip)
+}
+App.createMainView();
+setInterval(function(){ 
+  App.__updateTime();
+  if (App.isLiveStats){
+    App.liveGraph();
+  }
+}, 1000);
 </script>
-</body>
 </html>

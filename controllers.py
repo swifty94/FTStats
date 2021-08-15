@@ -1,25 +1,17 @@
-import re
-import sys
-import json
-import time
-import psutil
-import socket
-import os.path
 import sqlite3
 import platform
 import requests
-from os import path
-from numbers import Number
-from bs4 import BeautifulSoup
-from datetime import datetime
-from clickhouse_driver import connect
-from clickhouse_driver.errors import NetworkError
-from typing import Dict, List, AnyStr, Union
+from os import path, times
 import logging
-import logging.config
-
-log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
-logging.config.fileConfig(log_file_path)
+import logging.config        
+from bs4 import BeautifulSoup
+from urllib.request import urlopen
+from clickhouse_driver import connect
+import re, os, sys, json, psutil, socket
+from typing import Dict, List, AnyStr, Union
+from clickhouse_driver.errors import NetworkError
+_log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
+logging.config.fileConfig(_log_file_path)
 
 class JsonSettings(object):
     """
@@ -34,22 +26,21 @@ class JsonSettings(object):
         cn = __class__.__name__
         try:
             with open(json_file) as f:
-                data = json.load(f)
-            
+                data = json.load(f)            
             json_value = data[json_key]        
             return json_value
         except Exception as e:
-            logging.error(f'{cn} Exception: {e}', exc_info=1)
-    
+            logging.error(f'{cn} Exception: {e}', exc_info=1)        
+
     @staticmethod
     def getKeys(key_macro: str, value_list: List) -> List:
         """
         :Accept key pattern and lits of associated values to return list of corresponding keys \n
         :Example:\n
-        >>> acs_ports = Settings.parseJson('AcsPorts')
+        >>> acs_ports = JsonSettings.parseJson('AcsPorts')
         >>> print(acs_ports)
         >>> ['8080','8181']
-        >>> keys = Settings.getKeys('acs_port_', acs_ports)
+        >>> keys = JsonSettings.getKeys('acs_port_', acs_ports)
         >>> print(keys)
         >>> acs_port_8080, acs_port_8181
         """
@@ -77,14 +68,16 @@ class JsonSettings(object):
         except Exception as e:
             logging.error(f'{cn} Exception: {e}', exc_info=1)
 
+
 class DataCollector(object):
     """
-    Class that has varios methods for getting system related information e.g., RAM, CPU, etc.
+    Class that has various methods for getting system related information e.g., RAM, CPU, etc.
     """
     def __init__(self):
         self.cn = __class__.__name__ 
-        self.acsUrl = JsonSettings.parseJson('settings.json','AcsStatsUrl')
-        self.qoeDbStr = JsonSettings.parseJson('settings.json','QoeDbConnectionString')
+        self.acsUrl = JsonSettings.parseJson('settings.json', 'AcsStatsUrl')
+        self.qoeDbStr = JsonSettings.parseJson('settings.json', 'QoeDbConnectionString')
+        self.mountpoint = JsonSettings.parseJson('settings.json', 'mountpoint')
     
     def _getJbossPid(self) -> int:
         try:
@@ -105,7 +98,7 @@ class DataCollector(object):
                     pass            
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
-            return 0
+            return 1
     
     def _getJbossMem(self) -> float:
         try:
@@ -119,7 +112,7 @@ class DataCollector(object):
                 return ram
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
-            return 0
+            return 1
 
     def _getJbossCpu(self) -> float:
         try:
@@ -133,7 +126,7 @@ class DataCollector(object):
                 return cpu
         except Exception as e:
             logging.error(f'{self.cn} Error {e}', exc_info=1)
-            return 0
+            return 1
         
     def clickhouseSelect(self, sql):
         try:
@@ -152,12 +145,16 @@ class DataCollector(object):
             return 0
         except NetworkError as ne:
             logging.error(f'{self.cn} Error {ne}', exc_info=1)
-            return 0
+            return 1
 
     def getSys(self):
         try:
             app_name = db_ports = JsonSettings.parseJson('settings.json','AppName')
             version = JsonSettings.parseJson('settings.json','Version')
+            instancesArray = None
+            isCluster = bool(JsonSettings.parseJson('settings.json','isCluster'))                
+            if isCluster:
+                instancesArray = JsonSettings.parseJson('settings.json','instancesArray')
             uname = platform.uname()
             osname = uname.system
             nodename = uname.node                
@@ -167,13 +164,13 @@ class DataCollector(object):
             ram = round((svmem.total/1024/1024/1024),2)
             d = psutil.disk_usage('/')
             d_total = round((d.total/1024/1024/1024),2)
-            values = [osname,nodename,cpuarch,cores,ram,d_total,app_name,version]
-            keys = ['os','nodename','cpuarch','cores','ram','d_total','app_name','version']
+            values = [osname,nodename,cpuarch,cores,ram,d_total,app_name,version, isCluster, instancesArray]
+            keys = ['os','nodename','cpuarch','cores','ram','d_total','app_name','version','isCluster', 'instancesArray']
             data = JsonSettings.fillDict(keys,values)                     
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting SysInfo {e}', exc_info=1)
-            return 0
+            return 1
 
     def getRam(self):
         try:
@@ -187,7 +184,7 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting RAM Data {e}', exc_info=1)
-            return 0
+            return 1
         
 
     def getCpu(self):
@@ -201,36 +198,35 @@ class DataCollector(object):
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting CPU data {e}', exc_info=1)
-            return 0
+            return 1
     
     def getNetwork(self) -> Dict:
         try:
-            net_io = psutil.net_io_counters()
-            sent_b = round((net_io.bytes_sent/1024/1024/1024),2)
-            recv_b = round((net_io.bytes_recv/1024/1024/1024),2)
-            values = [sent_b, recv_b]
-            keys = ['sent_b','recv_b']
-            data = JsonSettings.fillDict(keys,values)                       
+            net_io = psutil.net_io_counters()            
+            errin = net_io.errin
+            errout = net_io.errout
+            dropin = net_io.dropin
+            dropout = net_io.dropout
+            values = [errin, errout, dropin, dropout]
+            keys = ['errin', 'errout', 'dropin', 'dropout']
+            data = JsonSettings.fillDict(keys, values)
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting Network Data {e}', exc_info=1)
-            return 0
+            return 1
     
     def getDisk(self) -> Dict:
         try:
-            d = psutil.disk_usage('/')
+            d = psutil.disk_usage(self.mountpoint)
             u_disk = round((d.used/1024/1024/1024),2)
-            f_disk = round((d.free/1024/1024/1024),2)
-            disk_io = psutil.disk_io_counters()
-            read_io = disk_io.read_bytes
-            write_io = disk_io.write_bytes
-            values = [u_disk,f_disk,read_io,write_io]
-            keys = ['u_disk','f_disk','read_io','write_io']
+            f_disk = round((d.free/1024/1024/1024),2)         
+            values = [u_disk,f_disk]
+            keys = ['u_disk','f_disk']
             data = JsonSettings.fillDict(keys,values)                    
             return data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting Disk Data {e}', exc_info=1)
-            return 0
+            return 1
 
     def countPort(self, portNum):
         try:            
@@ -243,7 +239,7 @@ class DataCollector(object):
             return count         
         except Exception as e:
             logging.error(f'{self.cn} Error while getting TcpPortsData, {e}', exc_info=1)
-            return 0
+            return 1
 
     def getDbPorts(self) -> Dict:
         """
@@ -260,7 +256,7 @@ class DataCollector(object):
             return db_data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting DPorts, {e}', exc_info=1)
-            return 0
+            return 1
         
     def getAcsPorts(self) -> Dict:
         try:
@@ -275,24 +271,59 @@ class DataCollector(object):
             return acs_data
         except Exception as e:
             logging.error(f'{self.cn} Error while getting AcsPorts, {e}', exc_info=1)
-            return 0
+            return 1
 
     def getQoeData(self):
         try:            
             response = requests.get(self.acsUrl)
             page = BeautifulSoup(response.text, 'html.parser')            
             qoe_sessions_min = page.find("td", text="QoESession per min (cur hour):").find_next_sibling("td").text            
-            cpe_data_serial = self.clickhouseSelect("select count(*) from ftacs_qoe_ui_data.cpe_data")
-            kpi_data_serial = self.clickhouseSelect("select count(*) from ftacs_qoe_ui_data.kpi_data")
-            qoedb_size = self.clickhouseSelect("SELECT round((sum(x)/1024/1024/1024),2) FROM (SELECT sum(bytes) as x FROM system.parts WHERE active AND database = 'ftacs_qoe_ui_data' GROUP BY bytes ORDER BY bytes DESC) y")
-            sysdb_size = self.clickhouseSelect("SELECT round((sum(x)/1024/1024/1024),2) FROM (SELECT sum(bytes) as x FROM system.parts WHERE active AND database = 'system' GROUP BY bytes ORDER BY bytes DESC) y")            
-            keys = ['qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size']
-            values = [qoe_sessions_min,cpe_data_serial,kpi_data_serial,qoedb_size,sysdb_size]
+            cpe_data_serial = self.clickhouseSelect("select count(*) from ftacs_qoe_ui_data.cpe_data")            
+            qoedb_size = self.clickhouseSelect("SELECT round((sum(x)/1024/1024/1024),2) FROM (SELECT sum(bytes) as x FROM system.parts WHERE active AND database = 'ftacs_qoe_ui_data' GROUP BY bytes ORDER BY bytes DESC) y")            
+            keys = ['qoe_sessions_min','cpe_data_serial','qoedb_size',]
+            values = [qoe_sessions_min,cpe_data_serial,qoedb_size]
             qoe_data = JsonSettings.fillDict(keys,values)            
             return qoe_data            
         except Exception as e:
             logging.error(f'{self.cn} Error while getting QoeData, {e}', exc_info=1)                        
-            return 0
+            return 1
+    
+    def getHazStatus(self):
+        try:
+            isHazelcast = bool(JsonSettings.parseJson("settings.json", "isHazelcast"))
+            hazInstances = JsonSettings.parseJson("settings.json", "instancesArray")
+            hazelcastPort = JsonSettings.parseJson("settings.json", "hazelcastPort")
+            full_haz_data= {}
+            if isHazelcast:
+                for host in hazInstances:
+                    url = f"http://{host}:{hazelcastPort}/hazelcast/health"
+                    response = requests.get(url)                                     
+                    haz_data = json.loads(response.text)
+                    node_haz_data = dict()
+                    node_haz_data["nodeName"] = host
+                    del haz_data['clusterSafe']
+                    del haz_data['migrationQueueSize']                    
+                    node_haz_data.update(haz_data)
+                    full_haz_data[host] = node_haz_data
+            return full_haz_data
+        except Exception as e:
+            logging.error(f'{self.cn} Error while getting HazelcastData, {e}', exc_info=1)                        
+            return 1
+    
+    def getliveUpdate(self):
+        try:
+            cpu = self.getCpu()
+            ram = self.getRam()
+            disk = self.getDisk()
+            data = {
+                "cpu": cpu,
+                "ram": ram,
+                "disk": disk
+            }
+            return data
+        except Exception as e:
+            logging.error(f'{self.cn} Error while getting LiveUpdateData, {e}', exc_info=1)                        
+            return 1
 
 class SqlProcessor(object):
     """
@@ -333,7 +364,7 @@ class SqlProcessor(object):
         
     def initDb(self) -> None:
         """
-        :Initiating database if not exist \n
+        Initiating database if not exist \n
         :Accept - None\n
         :Return - None
         """
@@ -360,7 +391,20 @@ class SqlProcessor(object):
             logging.info(f'{self.cn} Database created with tables:\n{tables.fetchall()}')
             if connection:
                 connection.close()
-    
+
+    def delDb(self) -> bool:
+        """
+        Void method to remove DB if needed\n
+        :Accept - None\n
+        :Return - True if succeded
+        """
+        try:
+            os.remove(self.dbname)
+            if not os.path.isfile(self.dbname):
+                return True            
+        except Exception as e:
+            logging.error(f'{self.cn} Error \n{e}', exc_info=1)
+
     def selectData(self, sql: str) -> List:
         """
         Select data from DB\n
@@ -407,7 +451,14 @@ class DbWorker(object):
     def __init__(self):
         self.cn = __class__.__name__
         self.data = DataCollector()
-        self.db = SqlProcessor()        
+        self.db = SqlProcessor()   
+
+    def _get_bindings(self, sql_values):
+        bindings = '('
+        for char in range(len(sql_values)):
+            bindings += '?,'
+        bindings += ')'
+        return bindings
 
     def getJsonValues(self, json: Dict) -> tuple:
         values = []
@@ -418,13 +469,35 @@ class DbWorker(object):
     
     def insertSys(self):
         try:
-            system = self.data.getSys()        
+            system = self.data.getSys()
+            system.pop('isCluster')
+            system.pop('instancesArray')
             sql = """
             INSERT or IGNORE INTO sysinfo ('os','nodename','cpuarch','cores','ram','d_total','app_name','version')
             VALUES (?,?,?,?,?,?,?,?)
             """
             values = self.getJsonValues(system)
             self.db.insertData(sql, values)            
+        except Exception as e:
+            logging.error(f'{self.cn} Exception: {e}', exc_info=1)
+            logging.error(f'{self.cn} SQL: {sql}')
+            logging.error(f'{self.cn} Data: {values}')
+    
+    def insertHaz(self):
+        try:
+            haz = self.data.getHazStatus()            
+            sql = """
+            INSERT INTO haz_info ('nodeName','nodeState','clusterState','clusterSize')
+            VALUES (?,?,?,?)
+            """
+            values = list()
+            for i in haz.values():
+                for j in i.values():
+                    values.append(j)
+                values = tuple(values)
+                self.db.insertData(sql, values)
+                values = list(values)
+                values.clear()
         except Exception as e:
             logging.error(f'{self.cn} Exception: {e}', exc_info=1)
             logging.error(f'{self.cn} SQL: {sql}')
@@ -436,17 +509,22 @@ class DbWorker(object):
             ram = self.getJsonValues(self.data.getRam())
             disk = self.getJsonValues(self.data.getDisk())
             network = self.getJsonValues(self.data.getNetwork())
-            qoe = self.getJsonValues(self.data.getQoeData())
-            values = cpu + ram + disk + network + qoe
-            bindings = '('
-            for char in range(len(values)):
-                bindings += '?,'
-            bindings += ')'
+            isQoe = JsonSettings.parseJson('settings.json','collectQoe')            
+            if isQoe:
+                qoe = self.getJsonValues(self.data.getQoeData())
+                values = cpu + ram + disk + network + qoe                                                
+            else:                
+                values = cpu + ram + disk + network + (0,0,0,0,0)
+            
+            bindings = self._get_bindings(values)
             sql = f"""
-            INSERT INTO stats ('javacpu','cpu_percent', 'loadavg','javamem', 'freeram', 'usedram','u_disk','f_disk','read_io','write_io','sent_b','recv_b','qoe_sessions_min','cpe_data_serial','kpi_data_serial','qoedb_size','sysdb_size')
-            VALUES {bindings.replace('?,)','?)')}
-            """            
-            self.db.insertData(sql, values)            
+                INSERT INTO stats ('javacpu','cpu_percent', 'loadavg',
+                'javamem', 'freeram', 'usedram',
+                'u_disk','f_disk','errin', 'errout', 'dropin', 'dropout', 
+                'qoe_sessions_min','cpe_data_serial','qoedb_size')
+                VALUES {bindings.replace('?,)','?)')}
+            """
+            self.db.insertData(sql, values)
         except Exception as e:
             logging.error(f'{self.cn} Exception: {e}', exc_info=1)
             logging.error(f'{self.cn} SQL: {sql}')
@@ -482,16 +560,33 @@ class DbWorker(object):
         Method validates if there is DB schema + insert data
         """
         try:
+            logging.info(f'{self.cn} periodicUpdate = Start')
+            isHaz = JsonSettings.parseJson('settings.json','isHazelcast')
             if self.db.isDb():
                 self.insertStats()
                 self.insertPorts()
-                logging.info(f'{self.cn}')            
+                if isHaz:
+                    self.insertHaz()           
             else:
                 self.db.initDb()
                 self.insertSys()
                 self.insertStats()
                 self.insertPorts()
-                logging.info(f'{self.cn}')
+                if isHaz:
+                    self.insertHaz()            
+        except Exception as e:
+            logging.critical(f'{self.cn} Exception: {e}')
+            logging.critical(f'{self.cn} StackTrace: \n', exc_info=1)
+        finally:
+            logging.info(f'{self.cn} periodicUpdate = End')
+
+    def periodicTruncate(self):        
+        """
+        Method that recreating the DB based on DbTruncateIntervalSec in settings\n        
+        """
+        try:
+            if self.db.delDb():
+                self.periodicUpdate()
         except Exception as e:
             logging.critical(f'{self.cn} Exception: {e}')
             logging.critical(f'{self.cn} StackTrace: \n', exc_info=1)

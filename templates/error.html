@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title id='FTStatsError'></title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+</head>
+<body>
+    {% for key, value in data.items() %}
+    <div style="position: center;">
+    <br>
+        <h3>{{ key }} -> {{ value }}</h3>
+    <br>
+    </div>
+    {% endfor %}
+</body>
+</html>

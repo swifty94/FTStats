@@ -1,8 +1,12 @@
-TODO
-log/app.log*
+log/*.log*
 reports/*.csv
-venv/
-__pycache__
+venv/*
+__pycache__/
 db/*.db
+<<<<<<< HEAD
 datagenerator.py
 .idea/
+=======
+db/*.sqbpro
+settings.json
+>>>>>>> dev

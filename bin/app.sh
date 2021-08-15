@@ -42,8 +42,12 @@ f_start(){
         echo "Installing dependencies"
         echo ""
         source venv/bin/activate && sleep 1
-        pip3 install -r $APP_HOME/dependencies.txt && sleep 1
+        cd dep/
+        pip3 install * -f ./ --no-index && sleep 1
         echo ""
+        echo "Done"
+        echo ""
+        cd ..                
         echo "Activated venv"
         echo ""
         python3 app.py &
@@ -101,6 +105,24 @@ f_status(){
     echo ""    
 }
 
+f_rebuild(){
+  f_stop
+  echo ""
+  echo "Rebuilding project..."
+  echo ""
+  echo "Purging items:"
+  echo "  - application DB"
+  echo "  - logs"
+  echo "  - reports"
+  echo "  - virtual env with dependencies"
+  echo ""
+  rm -rf reports/ log venv/ db/*.db && sleep 1
+  echo ""
+  echo "Done!"
+  echo ""
+  f_start
+}
+
 case "$1" in
 	start)
 		f_start
@@ -113,11 +135,14 @@ case "$1" in
         sleep 1
         f_start
 		;;
-    status)
+  status)
 		f_status
 		;;
+  rebuild)
+		f_rebuild
+		;;
 	*)
-		echo "Usage: app { start | stop | restart | status }"
+		echo "Usage: app { start | stop | restart | status | rebuild }"
 		exit 1
 esac
 

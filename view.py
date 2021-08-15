@@ -4,19 +4,27 @@ import requests
 import logging
 import logging.config
 from os import path
-from controllers import DataCollector
-from model import GraphStats, TableStats, CsvStats
+import controllers
+import model
 
 log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
 logging.config.fileConfig(log_file_path)
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+@app.errorhandler(404)
+def notImplemeted(e):
+    data = {
+      "HttpErrorCode ": f"{e}\n",
+      "FTStatsErrorText ": "NotImplementedEndpoint"
+    }
+    return render_template('error.html', data=data), 404
+    
 @app.route('/api/v1/ram', methods=['GET'])
 @cross_origin()
 def ram():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getRam()    
     return jsonify(outcome)
   except Exception as e:
@@ -26,7 +34,7 @@ def ram():
 @cross_origin()
 def cpu():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getCpu()    
     return jsonify(outcome)
   except Exception as e:
@@ -36,7 +44,7 @@ def cpu():
 @cross_origin()
 def network():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getNetwork()    
     return jsonify(outcome)
   except Exception as e:
@@ -46,7 +54,7 @@ def network():
 @cross_origin()
 def disk():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getDisk()    
     return jsonify(outcome)
   except Exception as e:
@@ -56,7 +64,7 @@ def disk():
 @cross_origin()
 def sys():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getSys()    
     return jsonify(outcome)
   except Exception as e:
@@ -66,7 +74,7 @@ def sys():
 @cross_origin()
 def acsport():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getAcsPorts()    
     return jsonify(outcome)
   except Exception as e:
@@ -76,8 +84,18 @@ def acsport():
 @cross_origin()
 def dbport():
   try:
-    data = DataCollector()
+    data = controllers.DataCollector()
     outcome = data.getDbPorts()    
+    return jsonify(outcome)
+  except Exception as e:
+    logging.error(f'Request -> /api/v1/dbport -> {e}', exc_info=1)
+  
+@app.route('/api/v1/liveUpdate', methods=['GET'])
+@cross_origin()
+def liveUpdate():
+  try:
+    data = controllers.DataCollector()
+    outcome = data.getliveUpdate()    
     return jsonify(outcome)
   except Exception as e:
     logging.error(f'Request -> /api/v1/dbport -> {e}', exc_info=1)
@@ -89,7 +107,7 @@ def graphData():
   try:    
     if 'kpi' in request.args:    
       kpi = str(request.args['kpi'])    
-      g = GraphStats()
+      g = model.GraphStats()
       outcome = g.KpiVsTime(kpi)      
       return jsonify(outcome)
     else:
@@ -103,11 +121,11 @@ def graphData():
 @cross_origin()
 def sessionsMeta():
   try:
-    t = TableStats()
+    t = model.TableStats()
     res = t._getMeta()
     return jsonify(res)
   except Exception as e:
-    logging.error(f'Request -> /api/v1/tableView -> {e}', exc_info=1)
+    logging.error(f'Request -> /api/v1/sessionsMeta -> {e}', exc_info=1)
 
 @app.route('/api/v1/tableView', methods=['GET'])
 @cross_origin()
@@ -116,9 +134,9 @@ def tableView():
     args = request.args
     if 'kpi' in args:
       kpi = str(request.args['kpi'])
-      t = TableStats()
+      t = model.TableStats()
       outcome = t.createView(kpi)
-      logging.info(f'Request -> /api/v1/tableView')
+      logging.info(f'Request -> /api/v1/tableView?kpi={kpi}')
     return jsonify(outcome)  
   except Exception as e:
     logging.error(f'Request -> /api/v1/tableView -> {e}', exc_info=1)
@@ -128,7 +146,7 @@ def tableView():
 @cross_origin()
 def createServerReport():
   try:        
-    c = CsvStats()
+    c = model.CsvStats()
     outcome = c.createServerReport()    
     return jsonify(outcome)
   except Exception as e:
@@ -138,12 +156,11 @@ def createServerReport():
 @cross_origin()
 def createSessionsReport():
   try:        
-    c = CsvStats()
+    c = model.CsvStats()
     outcome = c.createSessionsReport()    
     return jsonify(outcome)
   except Exception as e:
     logging.error(f'Request -> /api/v1/createSessionsReport -> {e}', exc_info=1)
-
 
 @app.route('/api/v1/downloadCsv',methods=['GET'])
 def download_file():
@@ -154,7 +171,25 @@ def download_file():
     
 @app.route('/stats', methods=['POST', 'GET'])
 def stats():
-  try:    
-    return render_template('stats.html')
+  try:
+    args = request.args
+    if 'ip' in args:
+      ip = str(request.args['ip'])
+      isLocalhost = False
+    else:
+      ip = '127.0.0.1'
+      isLocalhost = True
+    t = model.TableStats()
+    avgData = t.getAvgStats()
+    hostData = {
+      "ip": ip,
+      "port": int(controllers.JsonSettings.parseJson("settings.json", 'TcpPort')),
+      "isLiveStats": bool(controllers.JsonSettings.parseJson("settings.json", 'isLiveStats')),
+      "isLocalhost": isLocalhost,
+      "isHazelcast": bool(controllers.JsonSettings.parseJson("settings.json", 'isHazelcast')),
+      "avgData": avgData
+      }
+
+    return render_template('stats.html', hostData=hostData)
   except Exception as e:
     logging.error(f'Request -> /stats -> {e}', exc_info=1)    

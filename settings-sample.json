@@ -1,0 +1,36 @@
+{
+    "AcsPorts": ["8080", "8181"],    
+
+    "DbPorts": ["3306","8123"],
+
+    "mountpoint": "/",
+    
+    "collectQoe": true,
+
+    "AcsStatsUrl": "http://demo.friendly-tech.com:8181/acsstats",    
+        
+    "QoeDbConnectionString": "clickhouse://demo.friendly-tech.com",        
+
+    "isCluster": true,
+
+    "instancesArray": ["127.0.0.1","demo.friendly-tech.com", "demodm.friendly-tech.com"],
+
+    "isHazelcast": true,
+
+    "isLiveStats": true,
+
+    "hazelcastPort": "5701",
+
+    "IpAddr": "0.0.0.0",
+    
+    "TcpPort": "5050",
+    
+    "DbUpdateIntervalSec": "120",
+
+    "DbTruncateIntervalSec": "2592000",
+    
+    "AppName": "FTStats",
+    
+    "Version": "3.0"
+
+}
