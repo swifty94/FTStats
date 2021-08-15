@@ -1,24 +1,2 @@
-For v3: 
-- fix #10 - add statistics of the health of the hazelcast
-// 
-	- add new table id, clusterSize, clusterSafe, isClusterUp, updated
-	- create additional report type in model
-	- additional api endpoint in view
-//
-
-- fix #11 - iostat (io wait, etc) https://psutil.readthedocs.io/en/latest/#disks
-
-- fix #12 - errors in acs logs, trends, etc (errors in total, null pointers)
-// 
-	- add new table id, err_name, err_cnt, updated
-	- create additional report type in model
-	- additional api endpoint in view
-//
-- fix #13 - several kpis on single graph // to check plotly docs
-
-- fix #14 - create CHANGELOG
-
-- fix #15 - update README
-
-Set-ExecutionPolicy Unrestricted -Scope Process
-
++ fix #15 - create CHANGELOG
++ fix #16 - update README

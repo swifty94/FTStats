@@ -1,6 +1,7 @@
-log/app.log*
+log/*.log*
 reports/*.csv
-venv/
-__pycache__
+venv/*
+__pycache__/
 db/*.db
+db/*.sqbpro
 settings.json
