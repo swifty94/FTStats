@@ -9,20 +9,20 @@
 
 Usage demo:
 ---
-    - Dashboard
-    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/dash.gif)
+- Dashboard
+![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/dash.gif)
 
-    - Browsing servers from cluster
-    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/cluster.gif)
+- Browsing servers from cluster
+![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/cluster.gif)
 
-    - Graph view
-    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/graph.gif)
+- Graph view
+![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/graph.gif)
     
-    - Table view
-    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/table.gif)
+- Table view
+![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/table.gif)
     
-    - CSV reports
-    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/csv.gif)
+- CSV reports
+![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/csv.gif)
     
 Stack:
 ---
