@@ -3,6 +3,7 @@ reports/*.csv
 venv/*
 __pycache__/
 db/*.db
+TODO
 <<<<<<< HEAD
 datagenerator.py
 .idea/
