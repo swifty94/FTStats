@@ -2,7 +2,7 @@
 
 - Collecting various system related information + FTL platform related information
 - Easy to use
-- Mutli-server environment support
+- Multi-server environment support
 - Customizable
 - Scalable
 - Light
