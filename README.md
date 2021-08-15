@@ -2,14 +2,32 @@
 
 - Collecting various system related information + FTL platform related information
 - Easy to use
+- Mutli-server environment support
 - Customizable
 - Scalable
 - Light
 
+Usage demo:
+---
+    - Dashboard
+    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/dash.gif)
+
+    - Browsing servers from cluster
+    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/cluster.gif)
+
+    - Graph view
+    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/graph.gif)
+    
+    - Table view
+    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/table.gif)
+    
+    - CSV reports
+    ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/csv.gif)
+    
 Stack:
 ---
-- Back-end: Python / SQLite
-- Front-end: JS / Jinga / HTML / CSS
+- Back-end: Python/Flask / SQLite
+- Front-end: JavaScript / Jinga / HTML / CSS
 
 Requirements:
 ---
@@ -18,7 +36,6 @@ Requirements:
 
 Installation:
 ---
-
 <pre>
 git clone git@github.com:swifty94/FTStats.git
 
@@ -30,30 +47,55 @@ Usage
 - Adjust settings.json file respectively
 <pre>
 {
-    "AcsPorts": [],             // ports that your Jboss app is listening on
+    "AcsPorts": array(str x N), // ports that your Jboss app is listening on
                                 // e.g., ["8080","8181", "8443"]
 
-    "DbPorts": [],              // ports for DB connectivity (MySQL, Oracle and/or ClickHouse)
+    "DbPorts": array(str x N),  // ports for DB connectivity (MySQL, Oracle and/or ClickHouse)
                                 // e.g., ["3306","8123"]
 
-    "AcsStatsUrl": "",          // FT ACS stats URL
+    "mountpoint": str,          // path on disk to track its size/usage 
+                                // e,g, "/" 
+
+    "collectQoe": bool,          // Either collent QoE data or not
+                                 // Default - true                      
+
+    "AcsStatsUrl": str,          // FT ACS stats URL
                                 // e.g., "http://127.0.0.1:8080/acsstats"
 
-    "QoeDbConnectionString": "" // ClickHouse connection string
-                                // e.g., "clickhouse://demo.friendly-tech.com"
+    "QoeDbConnectionString": str  // ClickHouse connection string
+                                  // e.g., "clickhouse://demo.friendly-tech.com"
+
+    "isCluster": bool,           // If there are more than 1 server in environment
+                                 // default true
+
+    "instancesArray": array(str x N)  // Array of server ip/domains 
+                                        !!! (must be resolvanle at least within same network)
+                                      // e.g., ["127.0.0.1","demo.friendly-tech.com", "demodm.friendly-tech.com"]
+
+    "isHazelcast": bool,         // Either collent Hazelcast data or not
+                                 // Default - true
+
+    "isLiveStats": bool,        // Either display live statistics or not
+                                 // Default - true
+
+    "hazelcastPort": str,       // Hazelcast port
+                                 // Default - "5701"
+                                   
+    "IpAddr": str,               // IP address for FTStats app to bind on
+                                // Default 0.0.0.0 (any available interface)
     
-    "IpAddr": "0.0.0.0",        // IP address for FTStats app to bind on
-                                // default 0.0.0.0 (any available interface)
+    "TcpPort": str,              // TCP port for FTStats app to listen on
+                                // Default 5050
     
-    "TcpPort": "5555",          // TCP port for FTStats app to listen on
-                                // default 5555
+    "DbUpdateIntervalSec": str   // Frequency of system data collection and storing to DB
+                                // Default "120" seconds = each 2 minutes
+
+    "DbTruncateIntervalSec": str  // Frequency of cleaning old data from db (drop and recreate)
+                                  // Default "2592000" = each month                                
     
-    "DbUpdateIntervalSec": "120" // Frequency of system data collection and storing to DB
-                                // default 120 (seconds)
+    "AppName": str,              // Application name, can be changed to whatever you want                               
     
-    "AppName": "FTStats",       // Application name, can be changed to whatever you want                               
-    
-    "Version": 2.0              // Application version
+    "Version": int              // Application version
 }
 </pre>
 
@@ -61,10 +103,14 @@ Usage
     - Linux
     <pre>
     $ ./bin/app.sh 
-    Usage: app { start | stop | restart | status }
+    Usage: app { start | stop | restart | status | rebuild }
     </pre>
+    NOTE: 'rebuild' is useful when you need to re-init whole app. E,g., you need completely change monitoring parameters like ports, paths, even servers, etc. So if there were existing DB you'll need to drop it and re-create + it would be good to clean Python cache, etc. 
+    Basically, this call re-creates the venv, re-install the dependencies and re-creates the schema so you'll have a fresh app.
 
     - Windows
     <pre>
-    Run the bin/app.bat file 
+    - Adjust APP_HOME variable in bin/app.bat
+
+    - Run the bin/app.bat file as administrator.
     </pre>

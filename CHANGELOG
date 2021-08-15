@@ -1,0 +1,37 @@
+15.08.2021 - Dev branch is a merge candidate to master.
+------------------------------------------------------------------------------------------------
++ fix #17 - CHANGELOG created + updated README + added examples
++ fix #16 - Internal code restructure. MVC pattern still there + strict namespace/modules following
++ fix #15 - Dashboard template updated > Avg table stats Added
+Added new settings.json tag -> isLiveStats=True -> Dashboard liveupdate enabled
++ fix #14 - Dashboard template updated > Live stats bar chart updating every second
++ fix #13 - Ability to clean graph
++ fix #12 - Ability to compare KPIs on graph
++ fix 11 - CSS adjustments. Added Clock to pain page. Added Dashboard template
++ fix #10 - add statistics of the health of the hazelcast
+	- new table
+		CREATE TABLE "haz_info" (
+		"id"	INTEGER NOT NULL,
+		"nodeName"	TEXT,
+		"nodeState"	TEXT,
+		"clusterState"	TEXT,
+		"clusterSize"	TEXT,
+		"updated"	timestamp DATE DEFAULT (datetime(''now'',''localtime''))',
+		PRIMARY KEY("id" AUTOINCREMENT)
+	- new Table view
+	- additional api endpoint
++ fix #9 - add background process to truncate inner DB after X days (number of days to be defined in settings.json)
++ fix #8 -  customizable disk path
++ fix #5 -  restructured networks stats (errors, dropped rather than sent/recv bytes)
++ fix #3.2 - adjusted mechanism of data displaying from cluster
++ fix 3.1 - add f_rebuild function
++ fix 3 - init SQL / DB schema re-struct + code re-factoring
++ fix #2 - irrelevant data for jboss cpu
++ fix #1.1 -  Update Requirements and README
+------------------------------------------------------------------------------------------------
+Apr 30, 2021 - Release v2.0
+- Created from scratch the stats collecting application
+- Backend + frontend + DB
+------------------------------------------------------------------------------------------------
+Unknown time ago - Bash script for stats created
+ 

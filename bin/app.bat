@@ -2,8 +2,7 @@ rem Windows Bat script for easy application startup
 rem :Setting up venv + install dependencies if this is first run
 rem :Starting app from venv if already set
 rem :Adjust APP_HOME to actual path of project
-set arg=%1
-SET APP_HOME=C:\Users\kiril\Documents\LenovoData\Dev\FTStats_v3.0.0
+SET APP_HOME=
 cd %APP_HOME%
 if exist venv\ (
 	echo "Found venv"
