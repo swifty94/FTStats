@@ -1,3 +1,5 @@
+15.08.2021 - All basic checks passed. Merged 'dev' to 'master'. 
+------------------------------------------------------------------------------------------------
 15.08.2021 - Dev branch is a merge candidate to master.
 ------------------------------------------------------------------------------------------------
 + fix #17 - CHANGELOG created + updated README + added examples

@@ -1,31 +1,32 @@
 # FTStatsServer
 
-- Collecting various system related information + FTL platform related information
-- Easy to use
+- Collecting various system-related information + FTL platform-related information
+- Easy to configure and to use
 - Multi-server environment support
+- Data visualization in graphs, tables, and CSV reports
 - Customizable
-- Scalable
-- Light
+- Scalable and Light
+- 
 
 Usage demo:
 ---
-- Dashboard
+- Dashboard overview
 
 ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/dash.gif)
 
-- Browsing servers from cluster
+- Displaying data from several servers in the cluster
 
 ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/cluster.gif)
 
-- Graph view
+- Building graph for single and several KPIs
 
 ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/graph.gif)
     
-- Table view
+- Tables for each KPI
 
 ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/table.gif)
     
-- CSV reports
+- CSV reports creation
 
 ![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/csv.gif)
     
@@ -44,12 +45,12 @@ Installation:
 <pre>
 git clone git@github.com:swifty94/FTStats.git
 
-No Git installed? Just download the zip directly from here and upload on the server.
+No Git installed? Just download the zip directly from here and upload it on the server. Follow the instructions below.
 </pre>
 
 Usage
 ---
-- Adjust settings.json file respectively
+- Adjust settings.json file depending on your environment and needs respectively
 <pre>
 {
     "AcsPorts": array(str x N), // ports that your Jboss app is listening on
@@ -73,11 +74,11 @@ Usage
     "isCluster": bool,           // If there are more than 1 server in environment
                                  // default true
 
-    "instancesArray": array(str x N)  // Array of server ip/domains 
-                                        !!! (must be resolvanle at least within same network)
+    "instancesArray": array(str x N)  // Array of server IP/domains 
+                                        !!! (must be resolvable at least within same network)
                                       // e.g., ["127.0.0.1","demo.friendly-tech.com", "demodm.friendly-tech.com"]
 
-    "isHazelcast": bool,         // Either collent Hazelcast data or not
+    "isHazelcast": bool,         // Either collect Hazelcast data or not
                                  // Default - true
 
     "isLiveStats": bool,        // Either display live statistics or not
@@ -110,8 +111,8 @@ Usage
     $ ./bin/app.sh 
     Usage: app { start | stop | restart | status | rebuild }
     </pre>
-    NOTE: 'rebuild' is useful when you need to re-init whole app. E,g., you need completely change monitoring parameters like ports, paths, even servers, etc. So if there were existing DB you'll need to drop it and re-create + it would be good to clean Python cache, etc. 
-    Basically, this call re-creates the venv, re-install the dependencies and re-creates the schema so you'll have a fresh app.
+    NOTE: 'rebuild' is useful when you need to re-init the whole app. E,g., you need completely change monitoring parameters like ports, paths, even servers, etc. So, if there were existing DB, you'll need to drop it and re-create + it would be good to clean Python cache, etc. 
+    Basically, this call re-creates the venv (a virtual environment where all the project dependencies are stored), re-install the dependencies, and re-creates the schema so you'll have a fresh app.
 
     - Windows
     <pre>
