@@ -61,17 +61,15 @@
           <th scope="col">Free RAM (GB)</th>
           <th scope="col">Used RAM (GB)</th>
           <th scope="col">Jboss RAM (GB)</th>
-          <th scope="col">Disk used (GB)</th>
         </tr>
       </thead>
-      <tbody id="cpu-table-content"> 			
-        <td>{{ hostData.avgData.javacpu_avg }}</td>
-        <td>{{ hostData.avgData.cpu_percent_avg }}</td>
-        <td>{{ hostData.avgData.loadavg_avg }}</td>
-        <td>{{ hostData.avgData.freeram_avg }}</td>
-        <td>{{ hostData.avgData.usedram_avg }}</td>
-        <td>{{ hostData.avgData.javamem_avg }}</td>
-        <td>{{ hostData.avgData.u_disk_avg }}</td>
+      <tbody> 			
+        <td id='javacpu_avg'></td>
+        <td id='cpu_percent_avg'></td>
+        <td id='loadavg_avg'></td>
+        <td id='freeram_avg'></td>
+        <td id='usedram_avg'></td>
+        <td id='javamem_avg'></td>
       </tr> 
       </tbody>
     </table>
@@ -79,7 +77,8 @@
   <div id='live-stats'>
     <h2>Live statistic ( every second )</h2>
     <br>
-    <div id='live-bar-chart' style='width: 100%'></div>
+    <div id='live-cpu-bar' style='width: 50%; float: left;'></div>
+    <div id='live-ram-bar' style='width: 50%; float: right;'></div>
   </div>
   <br>
 </div>

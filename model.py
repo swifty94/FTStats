@@ -117,11 +117,10 @@ round(sum(cpu_percent)/count(cpu_percent),2) as cpu_percent_avg,
 round(sum(loadavg)/count(loadavg),2) as loadavg_avg,
 round(sum(freeram)/count(freeram),2) as freeram_avg,
 round(sum(usedram)/count(usedram),2) as usedram_avg,
-round(sum(javamem)/count(javamem),2) as javamem_avg,
-round(sum(u_disk)/count(u_disk),2) as u_disk_avg
+round(sum(javamem)/count(javamem),2) as javamem_avg
 FROM stats
             """
-            keys = ['javacpu_avg','cpu_percent_avg','loadavg_avg','freeram_avg','usedram_avg','javamem_avg','u_disk_avg']
+            keys = ['javacpu_avg','cpu_percent_avg','loadavg_avg','freeram_avg','usedram_avg','javamem_avg']
             values = self.db.selectData(avg_sql)
             data = {}
             for i in values:

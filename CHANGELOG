@@ -1,4 +1,4 @@
-15.08.2021 - All basic checks passed. Merged 'dev' to 'master'. 
+15.08.2021 - All basic checks passed. Merged 'dev' to 'master'.
 ------------------------------------------------------------------------------------------------
 15.08.2021 - Dev branch is a merge candidate to master.
 ------------------------------------------------------------------------------------------------
@@ -11,20 +11,20 @@ Added new settings.json tag -> isLiveStats=True -> Dashboard liveupdate enabled
 + fix #12 - Ability to compare KPIs on graph
 + fix 11 - CSS adjustments. Added Clock to pain page. Added Dashboard template
 + fix #10 - add statistics of the health of the hazelcast
-	- new table
-		CREATE TABLE "haz_info" (
-		"id"	INTEGER NOT NULL,
-		"nodeName"	TEXT,
-		"nodeState"	TEXT,
-		"clusterState"	TEXT,
-		"clusterSize"	TEXT,
-		"updated"	timestamp DATE DEFAULT (datetime(''now'',''localtime''))',
-		PRIMARY KEY("id" AUTOINCREMENT)
-	- new Table view
-	- additional api endpoint
+- new table
+CREATE TABLE "haz_info" (
+"id" INTEGER NOT NULL,
+"nodeName" TEXT,
+"nodeState" TEXT,
+"clusterState" TEXT,
+"clusterSize" TEXT,
+"updated" timestamp DATE DEFAULT (datetime(''now'',''localtime''))',
+PRIMARY KEY("id" AUTOINCREMENT)
+- new Table view
+- additional api endpoint
 + fix #9 - add background process to truncate inner DB after X days (number of days to be defined in settings.json)
-+ fix #8 -  customizable disk path
-+ fix #5 -  restructured networks stats (errors, dropped rather than sent/recv bytes)
++ fix #8 - customizable disk path
++ fix #5 - restructured networks stats (errors, dropped rather than sent/recv bytes)
 + fix #3.2 - adjusted mechanism of data displaying from cluster
 + fix 3.1 - add f_rebuild function
 + fix 3 - init SQL / DB schema re-struct + code re-factoring

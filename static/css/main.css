@@ -120,6 +120,7 @@ body, html {
   font-size: 17px;
   width: 100%;
 }
+
 #v-table {background-color: #f5f9ff;}
 #v-graph {background-color: #f5f9ff;}
 #v-csv {background-color: #f5f9ff;}

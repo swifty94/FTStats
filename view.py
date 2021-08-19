@@ -65,10 +65,20 @@ def disk():
 def sys():
   try:
     data = controllers.DataCollector()
-    outcome = data.getSys()    
+    outcome = data.getSys()
     return jsonify(outcome)
   except Exception as e:
     logging.error(f'Request -> /api/v1/sys -> {e}', exc_info=1)
+
+@app.route('/api/v1/avg', methods=['GET'])
+@cross_origin()
+def get_avg():
+  try:
+    t = model.TableStats()
+    avgData = t.getAvgStats()
+    return jsonify(avgData)
+  except Exception as e:
+    logging.error(f'Request -> /api/v1/avg -> {e}', exc_info=1)
 
 @app.route('/api/v1/acsport', methods=['GET'])
 @cross_origin()
@@ -175,22 +185,22 @@ def stats():
     port = int(controllers.JsonSettings.parseJson("settings.json", 'TcpPort'))        
     args = request.args
     visitor = request.remote_addr
+
     if 'ip' in args:
       ip = str(request.args['ip'])
       isLocalhost = False
+
     else:
       url = request.url
       ip = url.replace('http://','').replace(f':{port}/stats','')
       isLocalhost = True
-    t = model.TableStats()
-    avgData = t.getAvgStats()
+
     hostData = {
       "ip": ip,
       "port": port,
       "isLiveStats": bool(controllers.JsonSettings.parseJson("settings.json", 'isLiveStats')),
       "isLocalhost": isLocalhost,
       "isHazelcast": bool(controllers.JsonSettings.parseJson("settings.json", 'isHazelcast')),
-      "avgData": avgData,
       "visitor": visitor
       }
     logging.info(f"[ {visitor} ] Request to -> /stats")
