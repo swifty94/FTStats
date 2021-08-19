@@ -68,19 +68,19 @@ class AppView {
     }
 
     __setVal(tagName, value){
-        if(tagName && value){        
-            document.getElementById(tagName).innerHTML = value
-            let debug_line = tagName+"="+value
-            let result = {}
-            result[debug_line] = true
-            this.__debug("__setVal", true)
-            console.log(tagName+" : "+value)
-            return result;   
-        } else {
-            result[debug_line] = false
-            this.__debug("__setVal", false)
-            console.log(tagName+" : "+value)
-            return result;
+        try {
+            if(tagName && value){        
+                document.getElementById(tagName).innerHTML = value
+                this.__debug("__setVal", true)
+                console.log(tagName+" : "+value)
+                return true;   
+            } else {
+                this.__debug("__setVal", false)
+                console.log(tagName+" : "+value)
+                return false;
+            }
+        } catch (error) {
+            console.log("Error: \n"+ error)
         }
     }
 
@@ -88,6 +88,8 @@ class AppView {
         try {   
             let response = await fetch(this.api_url+'sys'); 
             let data = await response.json();
+            let avg_res = await fetch(this.api_url+'avg');
+            let avg_data = await avg_res.json();
             if (data){                
                 let os = data.os
                 let nodename = data.nodename
@@ -97,7 +99,14 @@ class AppView {
                 let d_total = data.d_total
                 let app_name = data.app_name
                 let version = data.version
-                let instancesArray = data.instancesArray                     
+                let instancesArray = data.instancesArray
+                let javacpu_avg = avg_data.javacpu_avg
+                let cpu_percent_avg = avg_data.cpu_percent_avg
+                let loadavg_avg = avg_data.loadavg_avg
+                let freeram_avg = avg_data.freeram_avg
+                let usedram_avg = avg_data.usedram_avg
+                let javamem_avg = avg_data.javamem_avg
+                
                 for (const ip in instancesArray) {
                     const element = instancesArray[ip];
                     if (element != this.host) {
@@ -109,15 +118,21 @@ class AppView {
                         hostSelector.appendChild(opt);
                     }                                                                  
                 }
-                this.__setVal("os",os)
-                this.__setVal("nodename",nodename)
-                this.__setVal("app-name", app_name+' server v.'+version)
-                this.__setVal("app-title", app_name)           
-                this.__setVal("cpuarch",cpuarch)
-                this.__setVal("cores",cores)
-                this.__setVal("ram",ram)
-                this.__setVal("d_total",d_total)
-                this.__debug("appHeader",true)
+                this.__setVal("os", os);
+                this.__setVal("nodename", nodename);
+                this.__setVal("app-name", app_name+' server v.'+version);
+                this.__setVal("app-title", app_name);    
+                this.__setVal("cpuarch", cpuarch);
+                this.__setVal("cores", cores);
+                this.__setVal("ram", ram);
+                this.__setVal("d_total", d_total);
+                this.__setVal('cpu_percent_avg', cpu_percent_avg);
+                this.__setVal('freeram_avg', freeram_avg);
+                this.__setVal('javacpu_avg', javacpu_avg );
+                this.__setVal('javamem_avg', javamem_avg);
+                this.__setVal('loadavg_avg', loadavg_avg);                
+                this.__setVal('usedram_avg', usedram_avg);
+                this.__debug("appHeader",true);
                 return true;
             }
         } catch (error) {
@@ -345,25 +360,60 @@ class AppView {
         try {
             let response = await fetch(this.api_url+'liveUpdate');
             let data = await response.json();
-            let cpu = data.cpu
-            let ram = data.ram
-            let disk = data.disk
-            var barData = [
-                {
-                  x: ['CPU usage Java', 'CPU %', 'CPU load avg', 'Free RAM', 'Used RAM', 'Java RAM', 'Disk used'],
-                  y: [cpu.javacpu, cpu.cpu_percent, , cpu.loadavg, ram.freeram, ram.usedram, ram.javamem, disk.u_disk ],
-                  type: 'bar'
-                }
-              ];
+            let cpu = data.cpu;
+            let ram = data.ram;
+            var javacpu = {
+                x: ['Java CPU usage'],
+                y: [cpu.javacpu],
+                type: 'bar',
+                name: 'Java CPU usage '
+              };
+            var cpu_percent = {
+                x: ['CPU %'],
+                y: [cpu.cpu_percent],
+                type: 'bar',
+                name: 'CPU %'
+            };
+            var loadavg = {
+                x: ['CPU load avg'],
+                y: [cpu.loadavg],
+                type: 'bar',
+                name: 'CPU load avg'
+            };
+            var freeram = {
+                x: ['Free RAM'],
+                y: [ram.freeram],
+                type: 'bar',
+                name: 'Free RAM'
+            };
+            var usedram = {
+                x: ['Used RAM'],
+                y: [ram.usedram],
+                type: 'bar',
+                name: 'Used RAM'
+            };
+            var javamem = {
+                x: ['Java RAM'],
+                y: [ram.javamem],
+                type: 'bar',
+                name: 'Java RAM'
+            };            
+            var cpuBarData = [javacpu, cpu_percent, loadavg];
+            var ramBarData = [freeram, usedram, javamem];
+
             if (document.getElementById('plot-container plotly')){
-                Plotly.purge('live-bar-chart');    
-                Plotly.newPlot('live-bar-chart', barData);
+                Plotly.purge('live-cpu-bar');
+                Plotly.purge('live-ram-bar');  
+                Plotly.newPlot('live-cpu-bar', cpuBarData);
+                Plotly.newPlot('live-ram-bar', ramBarData);
             } else {
-                Plotly.newPlot('live-bar-chart', barData);
+                Plotly.newPlot('live-cpu-bar', cpuBarData);
+                Plotly.newPlot('live-ram-bar', ramBarData);
             }
-            console.log("LiveUpdate = True")
+            console.log("LiveUpdateStatus = True");
         } catch (error) {
-            console.log("Error: "+error)
+            console.log("Error: "+error);
+            console.log("LiveUpdateStatus = False");
         }
     }
 
