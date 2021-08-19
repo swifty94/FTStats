@@ -16,7 +16,7 @@ Usage demo:
 
 - Displaying data from several servers in the cluster
 
-![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/cluster.gif)
+![](https://raw.githubusercontent.com/swifty94/FTStats/master/examples/cluster.gif)
 
 - Building graph for single and several KPIs
 
