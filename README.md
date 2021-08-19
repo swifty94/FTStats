@@ -12,7 +12,7 @@ Usage demo:
 ---
 - Dashboard overview
 
-![](https://raw.githubusercontent.com/swifty94/FTStats/dev/examples/dash.gif)
+![](https://raw.githubusercontent.com/swifty94/FTStats/master/examples/dash.gif)
 
 - Displaying data from several servers in the cluster
 
