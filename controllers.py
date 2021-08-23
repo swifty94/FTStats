@@ -130,7 +130,7 @@ class DataCollector(object):
         
     def clickhouseSelect(self, sql):
         try:
-            qoeConnection = connect(self.qoeDbStr)
+            qoeConnection = connect(self.qoeDbStr, port=8123)
             dbCursor = qoeConnection.cursor()
             dbCursor.execute(sql)
             result = dbCursor.fetchone()
@@ -514,7 +514,7 @@ class DbWorker(object):
                 qoe = self.getJsonValues(self.data.getQoeData())
                 values = cpu + ram + disk + network + qoe                                                
             else:                
-                values = cpu + ram + disk + network + (0,0,0,0,0)
+                values = cpu + ram + disk + network + (0,0,0)
             
             bindings = self._get_bindings(values)
             sql = f"""
